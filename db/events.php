@@ -9,9 +9,14 @@
 /**
  * Event observer subscriptions for local_teacher_commissions.
  *
- * We listen to user_enrolment_created so that commissions are generated
- * automatically whenever a paid enrollment is recorded in Moodle, regardless
- * of which payment gateway (PayPal, Stripe, etc.) processed the transaction.
+ * We listen to two events:
+ *   1. user_enrolment_created  — for instant-payment gateways (PayPal, Stripe, enrol_fee …)
+ *      that activate the enrolment immediately (status=0).
+ *   2. user_enrolment_updated  — for bank-transfer plugins that first create a pending
+ *      enrolment (status=1) and activate it later once the receipt is approved (status=0).
+ *
+ * create_transaction() is idempotent (unique index on userenrolmentid), so calling it from
+ * both handlers is safe — whichever fires first wins; the second call is silently skipped.
  *
  * @package     local_teacher_commissions
  * @copyright   2024 Your Organization
@@ -21,9 +26,17 @@
 defined('MOODLE_INTERNAL') || die();
 
 $observers = [
+    // Instant-payment gateways: enrolment is active (status=0) on creation.
     [
         'eventname'   => '\core\event\user_enrolment_created',
         'callback'    => '\local_teacher_commissions\event\observer::user_enrolment_created',
+        'priority'    => 200,
+        'internal'    => false,
+    ],
+    // Bank-transfer / manual-approval flow: enrolment switches from pending to active.
+    [
+        'eventname'   => '\core\event\user_enrolment_updated',
+        'callback'    => '\local_teacher_commissions\event\observer::user_enrolment_updated',
         'priority'    => 200,
         'internal'    => false,
     ],

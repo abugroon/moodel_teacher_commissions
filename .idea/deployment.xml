@@ -26,7 +26,7 @@
       <paths name="MoodelServer">
         <serverdata>
           <mappings>
-            <mapping local="$PROJECT_DIR$" web="/" />
+            <mapping deploy="/teacher_commissions" local="$PROJECT_DIR$" web="/" />
           </mappings>
         </serverdata>
       </paths>

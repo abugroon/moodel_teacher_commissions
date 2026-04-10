@@ -23,7 +23,17 @@ use local_teacher_commissions\output\teacher_ledger;
 
 require_login();
 $syscontext = context_system::instance();
-require_capability('local/teacher_commissions:viewowncommissions', $syscontext);
+
+// Teachers hold their role at course context, not system context.
+// local_teacher_commissions_has_teacher_access() handles both cases.
+if (!local_teacher_commissions_has_teacher_access()) {
+    throw new required_capability_exception(
+        $syscontext,
+        'local/teacher_commissions:viewowncommissions',
+        'nopermissions',
+        ''
+    );
+}
 
 // Teachers can only view their own ledger.
 $teacherid = $USER->id;
@@ -33,12 +43,6 @@ $PAGE->set_url(new moodle_url('/local/teacher_commissions/teacher/ledger.php'));
 $PAGE->set_title(get_string('nav_teacher_ledger', 'local_teacher_commissions'));
 $PAGE->set_heading(get_string('nav_teacher_ledger', 'local_teacher_commissions'));
 $PAGE->set_pagelayout('standard');
-
-$PAGE->navbar->add(
-    get_string('nav_teacher_dashboard', 'local_teacher_commissions'),
-    new moodle_url('/local/teacher_commissions/teacher/dashboard.php')
-);
-$PAGE->navbar->add(get_string('nav_teacher_ledger', 'local_teacher_commissions'));
 
 $summary              = commission_manager::get_teacher_summary($teacherid);
 $summary->firstname   = $USER->firstname;

@@ -32,57 +32,104 @@ class observer {
     /**
      * Triggered when a user enrolment is created.
      *
+     * Handles instant-payment gateways (PayPal, Stripe, enrol_fee …) that activate
+     * the enrolment immediately.  Bank-transfer enrolments start as pending (status=1)
+     * and are handled by user_enrolment_updated() instead.
+     *
      * @param \core\event\user_enrolment_created $event
      * @return void
      */
     public static function user_enrolment_created(\core\event\user_enrolment_created $event): void {
         global $DB;
 
-        $courseid        = $event->courseid;
-        $studentid       = $event->relateduserid;
         $userenrolmentid = $event->objectid;  // mdl_user_enrolments.id
 
-        // Load the user_enrolments record to get the enrolid.
         $ue = $DB->get_record('user_enrolments', ['id' => $userenrolmentid], '*', IGNORE_MISSING);
         if (!$ue) {
             return;
         }
 
-        // Load the enrol instance.
+        // Skip pending enrolments (status=1) — bank-transfer plugins create them this way.
+        // They will be picked up by user_enrolment_updated() once the receipt is approved.
+        if ((int) $ue->status !== 0) {
+            return;
+        }
+
+        self::maybe_create_commission($ue, $event->courseid, $event->relateduserid);
+    }
+
+    /**
+     * Triggered when a user enrolment is updated.
+     *
+     * Handles the bank-transfer approval flow: the enrolment is created as pending
+     * (status=1) and activated (status=0) once the admin confirms the receipt.
+     *
+     * create_transaction() is idempotent, so if the enrolment was already active on
+     * creation (non-bank gateways) this handler simply does nothing new.
+     *
+     * @param \core\event\user_enrolment_updated $event
+     * @return void
+     */
+    public static function user_enrolment_updated(\core\event\user_enrolment_updated $event): void {
+        global $DB;
+
+        $userenrolmentid = $event->objectid;
+
+        $ue = $DB->get_record('user_enrolments', ['id' => $userenrolmentid], '*', IGNORE_MISSING);
+        if (!$ue) {
+            return;
+        }
+
+        // Only act when the enrolment has just become active (approved by admin).
+        if ((int) $ue->status !== 0) {
+            return;
+        }
+
+        self::maybe_create_commission($ue, $event->courseid, $event->relateduserid);
+    }
+
+    /**
+     * Core logic: read enrol cost and create a commission transaction if applicable.
+     *
+     * Safe to call from both created and updated handlers because create_transaction()
+     * has a unique index on userenrolmentid — duplicate calls are silently ignored.
+     *
+     * @param \stdClass $ue   Row from mdl_user_enrolments.
+     * @param int       $courseid
+     * @param int       $studentid
+     * @return void
+     */
+    private static function maybe_create_commission(\stdClass $ue, int $courseid, int $studentid): void {
+        global $DB;
+
         $enrol = $DB->get_record('enrol', ['id' => $ue->enrolid], '*', IGNORE_MISSING);
         if (!$enrol) {
             return;
         }
 
-        // Determine sale amount.  We support:
-        //   a) enrol_paypal  → uses enrol.cost + enrol.currency
-        //   b) enrol_fee     → uses enrol.cost + enrol.currency (Moodle 4.1+ built-in)
-        //   c) Any plugin that stores a numeric cost in enrol.cost
+        // Supports: enrol_paypal, enrol_fee, enrol_bank, and any plugin storing cost in enrol.cost.
         $cost     = isset($enrol->cost) ? (float) $enrol->cost : 0.0;
-        $currency = isset($enrol->currency) ? $enrol->currency : (get_config('local_teacher_commissions', 'default_currency') ?: 'USD');
+        $currency = isset($enrol->currency) ? $enrol->currency
+                  : (get_config('local_teacher_commissions', 'default_currency') ?: 'USD');
 
         if ($cost <= 0) {
-            // Free enrolment — no commission.
             return;
         }
 
-        // Find the primary editingteacher of the course.
         $teacherid = commission_manager::get_course_teacher($courseid);
         if (!$teacherid) {
-            // No teacher assigned — nothing to do.
             return;
         }
 
-        // Create commission transaction (idempotent — skips duplicates).
         commission_manager::create_transaction(
             $teacherid,
             $courseid,
             $studentid,
             (int) $ue->enrolid,
-            $userenrolmentid,
+            (int) $ue->id,
             $cost,
             $currency,
-            'Auto-generated from enrolment #' . $userenrolmentid
+            'Auto-generated from enrolment #' . $ue->id
         );
     }
 }

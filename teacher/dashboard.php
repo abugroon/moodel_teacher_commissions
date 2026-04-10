@@ -22,15 +22,23 @@ use local_teacher_commissions\output\teacher_dashboard;
 
 require_login();
 $syscontext = context_system::instance();
-require_capability('local/teacher_commissions:viewowncommissions', $syscontext);
+
+// Teachers hold their role at course context, not system context.
+// local_teacher_commissions_has_teacher_access() handles both cases.
+if (!local_teacher_commissions_has_teacher_access()) {
+    throw new required_capability_exception(
+        $syscontext,
+        'local/teacher_commissions:viewowncommissions',
+        'nopermissions',
+        ''
+    );
+}
 
 $PAGE->set_context($syscontext);
 $PAGE->set_url(new moodle_url('/local/teacher_commissions/teacher/dashboard.php'));
 $PAGE->set_title(get_string('teacher_dashboard_title', 'local_teacher_commissions'));
 $PAGE->set_heading(get_string('teacher_dashboard_title', 'local_teacher_commissions'));
 $PAGE->set_pagelayout('standard');
-
-$PAGE->navbar->add(get_string('nav_teacher_dashboard', 'local_teacher_commissions'));
 
 $summary = commission_manager::get_teacher_summary($USER->id);
 $summary->firstname = $USER->firstname;
