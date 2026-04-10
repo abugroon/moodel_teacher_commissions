@@ -1,0 +1,84 @@
+{{!
+    Admin commission dashboard template.
+    @package   local_teacher_commissions
+    @copyright 2024 Your Organization
+    @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+}}
+<div class="local-tc-admin-dashboard">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>{{# str}} admin_dashboard_title, local_teacher_commissions {{/ str}}</h2>
+        <div>
+            <a href="{{{url_global_settings}}}" class="btn btn-secondary me-2">
+                {{# str}} commission_settings_title, local_teacher_commissions {{/ str}}
+            </a>
+            <a href="{{{url_reports}}}" class="btn btn-info">
+                {{# str}} nav_reports, local_teacher_commissions {{/ str}}
+            </a>
+        </div>
+    </div>
+
+    {{# has_rows}}
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped table-hover generaltable">
+            <thead class="table-dark">
+                <tr>
+                    <th>{{# str}} teacher, local_teacher_commissions {{/ str}}</th>
+                    <th class="text-center">{{# str}} courses_owned, local_teacher_commissions {{/ str}}</th>
+                    <th class="text-center">{{# str}} paid_enrollments, local_teacher_commissions {{/ str}}</th>
+                    <th class="text-end">{{# str}} total_sales, local_teacher_commissions {{/ str}}</th>
+                    <th class="text-center">{{# str}} commission_percent, local_teacher_commissions {{/ str}}</th>
+                    <th class="text-end">{{# str}} total_commission_earned, local_teacher_commissions {{/ str}}</th>
+                    <th class="text-end">{{# str}} total_commission_paid, local_teacher_commissions {{/ str}}</th>
+                    <th class="text-end">{{# str}} balance_unpaid, local_teacher_commissions {{/ str}}</th>
+                    <th class="text-center">{{# str}} actions, local_teacher_commissions {{/ str}}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{# rows}}
+                <tr>
+                    <td>
+                        <strong>{{teachername}}</strong><br>
+                        <small class="text-muted">{{email}}</small>
+                    </td>
+                    <td class="text-center">{{courses_owned}}</td>
+                    <td class="text-center">{{paid_enrollments}}</td>
+                    <td class="text-end">{{total_sales}} {{currency}}</td>
+                    <td class="text-center">{{commission_percent}}%</td>
+                    <td class="text-end">{{earned}} {{currency}}</td>
+                    <td class="text-end text-success">{{paid}} {{currency}}</td>
+                    <td class="text-end {{# has_balance}}fw-bold text-danger{{/ has_balance}}">
+                        {{balance}} {{currency}}
+                    </td>
+                    <td class="text-center text-nowrap">
+                        <a href="{{{url_ledger}}}" class="btn btn-sm btn-outline-primary me-1"
+                           title="{{# str}} view_ledger, local_teacher_commissions {{/ str}}">
+                            <i class="fa fa-list"></i>
+                            {{# str}} view_ledger, local_teacher_commissions {{/ str}}
+                        </a>
+                        {{# has_balance}}
+                        <a href="{{{url_payout}}}" class="btn btn-sm btn-success me-1"
+                           title="{{# str}} pay_commission, local_teacher_commissions {{/ str}}">
+                            <i class="fa fa-money"></i>
+                            {{# str}} pay_commission, local_teacher_commissions {{/ str}}
+                        </a>
+                        {{/ has_balance}}
+                        <a href="{{{url_settings}}}" class="btn btn-sm btn-outline-secondary"
+                           title="{{# str}} edit_commission, local_teacher_commissions {{/ str}}">
+                            <i class="fa fa-cog"></i>
+                        </a>
+                    </td>
+                </tr>
+                {{/ rows}}
+            </tbody>
+        </table>
+    </div>
+    {{/ has_rows}}
+
+    {{^ has_rows}}
+    <div class="alert alert-info">
+        {{# str}} no_teachers, local_teacher_commissions {{/ str}}
+    </div>
+    {{/ has_rows}}
+
+</div>

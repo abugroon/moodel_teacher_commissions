@@ -1,0 +1,159 @@
+{{!
+    Teacher commission ledger / full statement template.
+    @package   local_teacher_commissions
+    @copyright 2024 Your Organization
+    @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+}}
+<div class="local-tc-teacher-ledger">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>{{# str}} ledger_title, local_teacher_commissions, {{teachername}} {{/ str}}</h2>
+        <a href="{{{url_back}}}" class="btn btn-secondary">
+            {{# str}} back_to_dashboard, local_teacher_commissions {{/ str}}
+        </a>
+    </div>
+
+    {{! Summary cards }}
+    <div class="row mb-4">
+        <div class="col-sm-6 col-md-2 mb-2">
+            <div class="card text-center border-primary">
+                <div class="card-body p-2">
+                    <div class="small text-muted">{{# str}} commission_percent, local_teacher_commissions {{/ str}}</div>
+                    <div class="h5 mb-0">{{commission_percent}}%</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-md-2 mb-2">
+            <div class="card text-center">
+                <div class="card-body p-2">
+                    <div class="small text-muted">{{# str}} total_sales, local_teacher_commissions {{/ str}}</div>
+                    <div class="h5 mb-0">{{total_sales}}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-md-2 mb-2">
+            <div class="card text-center border-success">
+                <div class="card-body p-2">
+                    <div class="small text-muted">{{# str}} total_commission_earned, local_teacher_commissions {{/ str}}</div>
+                    <div class="h5 mb-0 text-success">{{earned}}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-md-2 mb-2">
+            <div class="card text-center border-info">
+                <div class="card-body p-2">
+                    <div class="small text-muted">{{# str}} total_commission_paid, local_teacher_commissions {{/ str}}</div>
+                    <div class="h5 mb-0 text-info">{{paid_out}}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-md-2 mb-2">
+            <div class="card text-center border-warning">
+                <div class="card-body p-2">
+                    <div class="small text-muted">{{# str}} current_balance, local_teacher_commissions {{/ str}}</div>
+                    <div class="h5 mb-0 fw-bold">{{balance}} {{currency}}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-md-2 mb-2 d-flex align-items-center">
+            <div class="w-100">
+                <a href="{{{url_export_pdf}}}" class="btn btn-sm btn-outline-danger w-100 mb-1">
+                    <i class="fa fa-file-pdf-o"></i> {{# str}} export_pdf, local_teacher_commissions {{/ str}}
+                </a>
+                <a href="{{{url_export_excel}}}" class="btn btn-sm btn-outline-success w-100">
+                    <i class="fa fa-file-excel-o"></i> {{# str}} export_excel, local_teacher_commissions {{/ str}}
+                </a>
+            </div>
+        </div>
+    </div>
+
+    {{# is_admin}}
+    <div class="mb-3">
+        <a href="{{{url_payout}}}" class="btn btn-success">
+            <i class="fa fa-money"></i> {{# str}} pay_commission, local_teacher_commissions {{/ str}}
+        </a>
+    </div>
+    {{/ is_admin}}
+
+    {{! Commission Transactions }}
+    <h3>{{# str}} commission_earned, local_teacher_commissions {{/ str}}</h3>
+
+    {{# has_transactions}}
+    <div class="table-responsive mb-4">
+        <table class="table table-bordered table-sm generaltable">
+            <thead class="table-light">
+                <tr>
+                    <th>{{# str}} date, local_teacher_commissions {{/ str}}</th>
+                    <th>{{# str}} course, local_teacher_commissions {{/ str}}</th>
+                    <th>{{# str}} student, local_teacher_commissions {{/ str}}</th>
+                    <th class="text-end">{{# str}} sale_amount, local_teacher_commissions {{/ str}}</th>
+                    <th class="text-center">%</th>
+                    <th class="text-end">{{# str}} commission_earned, local_teacher_commissions {{/ str}}</th>
+                    <th class="text-center">{{# str}} status, local_teacher_commissions {{/ str}}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{# transactions}}
+                <tr>
+                    <td class="text-nowrap">{{date}}</td>
+                    <td>{{coursename}}</td>
+                    <td>{{student}}</td>
+                    <td class="text-end">{{saleamount}} {{currency}}</td>
+                    <td class="text-center">{{commission_pct}}%</td>
+                    <td class="text-end fw-bold">{{commission}} {{currency}}</td>
+                    <td class="text-center">
+                        {{# is_paid}}
+                        <span class="badge text-bg-success">{{status_label}}</span>
+                        {{/ is_paid}}
+                        {{^ is_paid}}
+                        <span class="badge text-bg-warning">{{status_label}}</span>
+                        {{/ is_paid}}
+                    </td>
+                </tr>
+                {{/ transactions}}
+            </tbody>
+        </table>
+    </div>
+    {{/ has_transactions}}
+
+    {{^ has_transactions}}
+    <div class="alert alert-info mb-4">
+        {{# str}} no_transactions, local_teacher_commissions {{/ str}}
+    </div>
+    {{/ has_transactions}}
+
+    {{! Payout History }}
+    <h3>{{# str}} payout_history, local_teacher_commissions {{/ str}}</h3>
+
+    {{# has_payouts}}
+    <div class="table-responsive">
+        <table class="table table-bordered table-sm generaltable">
+            <thead class="table-light">
+                <tr>
+                    <th>{{# str}} payout_date, local_teacher_commissions {{/ str}}</th>
+                    <th class="text-end">{{# str}} payout_amount_col, local_teacher_commissions {{/ str}}</th>
+                    <th>{{# str}} processed_by, local_teacher_commissions {{/ str}}</th>
+                    <th>{{# str}} notes, local_teacher_commissions {{/ str}}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{# payouts}}
+                <tr>
+                    <td class="text-nowrap">{{date}}</td>
+                    <td class="text-end text-success fw-bold">{{amount}} {{currency}}</td>
+                    <td>{{admin}}</td>
+                    <td>{{notes}}</td>
+                </tr>
+                {{/ payouts}}
+            </tbody>
+        </table>
+    </div>
+    {{/ has_payouts}}
+
+    {{^ has_payouts}}
+    <div class="alert alert-info">
+        {{# str}} no_payouts, local_teacher_commissions {{/ str}}
+    </div>
+    {{/ has_payouts}}
+
+</div>
