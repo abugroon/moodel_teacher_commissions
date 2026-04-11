@@ -79,6 +79,7 @@ if ($data = $form->get_data()) {
 }
 
 echo $OUTPUT->header();
+echo local_teacher_commissions_admin_nav('settings');
 echo $OUTPUT->heading(
     $teacherid > 0
         ? get_string('teacher_commission_override', 'local_teacher_commissions') . ': ' . $teachername

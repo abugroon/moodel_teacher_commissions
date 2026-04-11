@@ -42,6 +42,7 @@ $summaries = commission_manager::get_all_teacher_summaries();
 $renderer = $PAGE->get_renderer('local_teacher_commissions');
 
 echo $OUTPUT->header();
+echo local_teacher_commissions_admin_nav('dashboard');
 $renderable = new admin_dashboard($summaries);
 echo $renderer->render_admin_dashboard($renderable);
 echo $OUTPUT->footer();

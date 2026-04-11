@@ -55,6 +55,7 @@ $payouts  = payout_manager::get_payouts($teacherid);
 $renderer = $PAGE->get_renderer('local_teacher_commissions');
 
 echo $OUTPUT->header();
+echo local_teacher_commissions_teacher_nav('ledger');
 $renderable = new teacher_ledger($summary, $txresult['records'], $payouts, false);
 echo $renderer->render_teacher_ledger($renderable);
 echo $OUTPUT->footer();

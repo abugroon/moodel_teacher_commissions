@@ -48,6 +48,7 @@ $summary->lastname  = $USER->lastname;
 $renderer = $PAGE->get_renderer('local_teacher_commissions');
 
 echo $OUTPUT->header();
+echo local_teacher_commissions_teacher_nav('dashboard');
 $renderable = new teacher_dashboard($summary);
 echo $renderer->render_teacher_dashboard($renderable);
 echo $OUTPUT->footer();

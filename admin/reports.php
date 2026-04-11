@@ -75,6 +75,7 @@ $yearly  = report_manager::get_yearly_summary($filters);
 
 // ---- Render ----
 echo $OUTPUT->header();
+echo local_teacher_commissions_admin_nav('reports');
 
 $form->display();
 

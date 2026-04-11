@@ -53,6 +53,82 @@ function local_teacher_commissions_has_teacher_access(): bool {
     return !empty($courses);
 }
 
+// ---------------------------------------------------------------------------
+// In-page navigation helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Render a Bootstrap nav-tabs bar for the given links array.
+ *
+ * @param array  $links  Associative array of key => ['label' => string, 'url' => moodle_url]
+ * @param string $active Key of the currently active tab (empty string = none active)
+ * @return string HTML
+ */
+function local_teacher_commissions_render_nav(array $links, string $active): string {
+    $html = html_writer::start_tag('ul', ['class' => 'nav nav-tabs mb-4']);
+    foreach ($links as $key => $item) {
+        $isactive = ($key === $active);
+        $aattrs   = [
+            'class' => 'nav-link' . ($isactive ? ' active' : ''),
+            'href'  => $item['url']->out(false),
+        ];
+        if ($isactive) {
+            $aattrs['aria-current'] = 'page';
+        }
+        $html .= html_writer::start_tag('li', ['class' => 'nav-item']);
+        $html .= html_writer::tag('a', $item['label'], $aattrs);
+        $html .= html_writer::end_tag('li');
+    }
+    $html .= html_writer::end_tag('ul');
+    return $html;
+}
+
+/**
+ * Return the admin navigation bar HTML.
+ *
+ * @param string $active One of: 'dashboard', 'reports', 'settings', or '' for none.
+ * @return string HTML
+ */
+function local_teacher_commissions_admin_nav(string $active = ''): string {
+    $links = [
+        'dashboard' => [
+            'label' => get_string('nav_admin_dashboard', 'local_teacher_commissions'),
+            'url'   => new moodle_url('/local/teacher_commissions/admin/index.php'),
+        ],
+        'reports' => [
+            'label' => get_string('nav_reports', 'local_teacher_commissions'),
+            'url'   => new moodle_url('/local/teacher_commissions/admin/reports.php'),
+        ],
+        'settings' => [
+            'label' => get_string('commission_settings_title', 'local_teacher_commissions'),
+            'url'   => new moodle_url('/local/teacher_commissions/admin/commission_settings.php'),
+        ],
+    ];
+    return local_teacher_commissions_render_nav($links, $active);
+}
+
+/**
+ * Return the teacher navigation bar HTML.
+ *
+ * @param string $active One of: 'dashboard', 'ledger', or '' for none.
+ * @return string HTML
+ */
+function local_teacher_commissions_teacher_nav(string $active = ''): string {
+    $links = [
+        'dashboard' => [
+            'label' => get_string('nav_teacher_dashboard', 'local_teacher_commissions'),
+            'url'   => new moodle_url('/local/teacher_commissions/teacher/dashboard.php'),
+        ],
+        'ledger' => [
+            'label' => get_string('nav_teacher_ledger', 'local_teacher_commissions'),
+            'url'   => new moodle_url('/local/teacher_commissions/teacher/ledger.php'),
+        ],
+    ];
+    return local_teacher_commissions_render_nav($links, $active);
+}
+
+// ---------------------------------------------------------------------------
+
 /**
  * Inject commission navigation items into Moodle's navigation tree.
  *
