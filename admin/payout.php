@@ -87,6 +87,12 @@ if ($data = $form->get_data()) {
 
 echo $OUTPUT->header();
 echo local_teacher_commissions_admin_nav('dashboard');
+echo local_teacher_commissions_admin_teacher_nav(
+    $teacherid,
+    fullname($teacher),
+    'payout',
+    $balance
+);
 
 if (!empty($errormsg)) {
     echo $OUTPUT->notification($errormsg, 'error');

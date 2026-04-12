@@ -55,6 +55,12 @@ $renderer = $PAGE->get_renderer('local_teacher_commissions');
 
 echo $OUTPUT->header();
 echo local_teacher_commissions_admin_nav('dashboard');
+echo local_teacher_commissions_admin_teacher_nav(
+    $teacherid,
+    fullname($teacher),
+    'ledger',
+    $summary->balance
+);
 $renderable = new teacher_ledger($summary, $txresult['records'], $payouts, true);
 echo $renderer->render_teacher_ledger($renderable);
 echo $OUTPUT->footer();

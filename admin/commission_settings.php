@@ -78,8 +78,21 @@ if ($data = $form->get_data()) {
     );
 }
 
+// Build teacher summary for balance (needed for payout link visibility).
+$teachersummary = $teacherid > 0 ? commission_manager::get_teacher_summary($teacherid) : null;
+
 echo $OUTPUT->header();
 echo local_teacher_commissions_admin_nav('settings');
+
+if ($teacherid > 0) {
+    echo local_teacher_commissions_admin_teacher_nav(
+        $teacherid,
+        $teachername,
+        'settings',
+        $teachersummary ? $teachersummary->balance : 0.0
+    );
+}
+
 echo $OUTPUT->heading(
     $teacherid > 0
         ? get_string('teacher_commission_override', 'local_teacher_commissions') . ': ' . $teachername

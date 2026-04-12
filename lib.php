@@ -108,6 +108,94 @@ function local_teacher_commissions_admin_nav(string $active = ''): string {
 }
 
 /**
+ * Return a teacher-context quick-links bar for admin pages.
+ *
+ * Shows links to all pages related to a specific teacher so admins can
+ * jump between dashboard, ledger, settings, payout and reports without
+ * navigating back and forth through the main nav.
+ *
+ * @param int    $teacherid   The target teacher's user id.
+ * @param string $teachername Display name shown in the bar heading.
+ * @param string $active      Active page key: 'ledger', 'settings', 'payout', or '' for none.
+ * @param float  $balance     Teacher's current unpaid balance (shows Payout link only when > 0).
+ * @return string HTML
+ */
+function local_teacher_commissions_admin_teacher_nav(
+    int $teacherid,
+    string $teachername,
+    string $active = '',
+    float $balance = 0.0
+): string {
+    if ($teacherid <= 0) {
+        return '';
+    }
+
+    $links = [
+        'dashboard' => [
+            'label' => get_string('nav_admin_dashboard', 'local_teacher_commissions'),
+            'url'   => new moodle_url('/local/teacher_commissions/admin/index.php'),
+            'icon'  => 'fa-tachometer',
+            'class' => 'btn-outline-secondary',
+        ],
+        'ledger' => [
+            'label' => get_string('view_ledger', 'local_teacher_commissions'),
+            'url'   => new moodle_url('/local/teacher_commissions/admin/ledger.php', ['id' => $teacherid]),
+            'icon'  => 'fa-list',
+            'class' => 'btn-outline-primary',
+        ],
+        'settings' => [
+            'label' => get_string('edit_commission', 'local_teacher_commissions'),
+            'url'   => new moodle_url('/local/teacher_commissions/admin/commission_settings.php', ['id' => $teacherid]),
+            'icon'  => 'fa-cog',
+            'class' => 'btn-outline-dark',
+        ],
+    ];
+
+    if ($balance > 0) {
+        $links['payout'] = [
+            'label' => get_string('pay_commission', 'local_teacher_commissions'),
+            'url'   => new moodle_url('/local/teacher_commissions/admin/payout.php', ['id' => $teacherid]),
+            'icon'  => 'fa-money',
+            'class' => 'btn-outline-success',
+        ];
+    }
+
+    $links['reports'] = [
+        'label' => get_string('nav_reports', 'local_teacher_commissions'),
+        'url'   => new moodle_url('/local/teacher_commissions/admin/reports.php', ['teacherid' => $teacherid]),
+        'icon'  => 'fa-bar-chart',
+        'class' => 'btn-outline-info',
+    ];
+
+    $html  = html_writer::start_div('card mb-3 border-secondary');
+    $html .= html_writer::start_div('card-header bg-light py-2 d-flex align-items-center gap-2');
+    $html .= html_writer::tag('i', '', ['class' => 'fa fa-user-circle text-secondary']);
+    $html .= html_writer::tag('strong', $teachername);
+    $html .= html_writer::end_div();
+
+    $html .= html_writer::start_div('card-body py-2');
+    $html .= html_writer::start_div('d-flex flex-wrap gap-2');
+
+    foreach ($links as $key => $item) {
+        $isactive = ($key === $active);
+        $classes  = 'btn btn-sm ' . ($isactive
+            ? str_replace('btn-outline-', 'btn-', $item['class']) . ' disabled'
+            : $item['class']);
+        $attrs = ['href' => $item['url']->out(false), 'class' => $classes];
+        if ($isactive) {
+            $attrs['aria-current'] = 'page';
+        }
+        $icon  = html_writer::tag('i', '', ['class' => 'fa ' . $item['icon'] . ' me-1']);
+        $html .= html_writer::tag('a', $icon . $item['label'], $attrs);
+    }
+
+    $html .= html_writer::end_div(); // d-flex
+    $html .= html_writer::end_div(); // card-body
+    $html .= html_writer::end_div(); // card
+    return $html;
+}
+
+/**
  * Return the teacher navigation bar HTML.
  *
  * @param string $active One of: 'dashboard', 'ledger', or '' for none.

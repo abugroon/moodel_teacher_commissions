@@ -19,28 +19,19 @@
 defined('MOODLE_INTERNAL') || die();
 
 if ($hassiteconfig) {
+
+    // ── Main settings page ───────────────────────────────────────────────────
     $settings = new admin_settingpage(
         'local_teacher_commissions',
         get_string('pluginname', 'local_teacher_commissions')
     );
-
-    // Link to the full admin dashboard.
-    $settings->add(new admin_setting_heading(
-        'local_teacher_commissions/heading',
-        get_string('settings_heading', 'local_teacher_commissions'),
-        html_writer::link(
-            new moodle_url('/local/teacher_commissions/admin/index.php'),
-            get_string('nav_admin_dashboard', 'local_teacher_commissions'),
-            ['class' => 'btn btn-primary btn-sm']
-        )
-    ));
 
     // Default commission percentage.
     $settings->add(new admin_setting_configtext(
         'local_teacher_commissions/default_commission_percent',
         get_string('default_commission_percent',      'local_teacher_commissions'),
         get_string('default_commission_percent_desc', 'local_teacher_commissions'),
-        '10',   // Default value: 10 %.
+        '10',
         PARAM_FLOAT
     ));
 
@@ -53,5 +44,34 @@ if ($hassiteconfig) {
         PARAM_ALPHA
     ));
 
-    $ADMIN->add('localplugins', $settings);
+    // ── Category to group all plugin pages under Local plugins ───────────────
+    $ADMIN->add('localplugins', new admin_category(
+        'local_teacher_commissions_cat',
+        get_string('pluginname', 'local_teacher_commissions')
+    ));
+
+    // Settings page goes inside the category.
+    $ADMIN->add('local_teacher_commissions_cat', $settings);
+
+    // ── Navigation links ─────────────────────────────────────────────────────
+    $ADMIN->add('local_teacher_commissions_cat', new admin_externalpage(
+        'local_teacher_commissions_dashboard',
+        get_string('nav_admin_dashboard', 'local_teacher_commissions'),
+        new moodle_url('/local/teacher_commissions/admin/index.php'),
+        'local/teacher_commissions:viewadmindashboard'
+    ));
+
+    $ADMIN->add('local_teacher_commissions_cat', new admin_externalpage(
+        'local_teacher_commissions_reports',
+        get_string('nav_reports', 'local_teacher_commissions'),
+        new moodle_url('/local/teacher_commissions/admin/reports.php'),
+        'local/teacher_commissions:viewreports'
+    ));
+
+    $ADMIN->add('local_teacher_commissions_cat', new admin_externalpage(
+        'local_teacher_commissions_commission_settings',
+        get_string('commission_settings_title', 'local_teacher_commissions'),
+        new moodle_url('/local/teacher_commissions/admin/commission_settings.php'),
+        'local/teacher_commissions:managecommissions'
+    ));
 }
