@@ -218,6 +218,81 @@ function local_teacher_commissions_teacher_nav(string $active = ''): string {
 // ---------------------------------------------------------------------------
 
 /**
+ * Inject a commission link into the Moodle top navbar.
+ * Shown to admins and to any user who has teacher-level access.
+ *
+ * @param \renderer_base $renderer
+ * @return string HTML
+ */
+function local_teacher_commissions_render_navbar_output(\renderer_base $renderer): string {
+    global $USER;
+
+    if (!isloggedin() || isguestuser()) {
+        return '';
+    }
+
+    $syscontext = context_system::instance();
+
+    // Admin path — link to admin dashboard.
+    if (has_capability('local/teacher_commissions:viewadmindashboard', $syscontext)) {
+        $url   = new moodle_url('/local/teacher_commissions/admin/index.php');
+        $label = get_string('nav_admin_dashboard', 'local_teacher_commissions');
+        return local_teacher_commissions_navbar_link($url->out(false), '&#x1F4B0;', $label);
+    }
+
+    // Teacher path — only for users who actually have courses.
+    if (local_teacher_commissions_has_teacher_access()) {
+        $url   = new moodle_url('/local/teacher_commissions/teacher/dashboard.php');
+        $label = get_string('nav_teacher_dashboard', 'local_teacher_commissions');
+        return local_teacher_commissions_navbar_link($url->out(false), '&#x1F4B0;', $label);
+    }
+
+    return '';
+}
+
+/**
+ * Helper: build a styled navbar anchor tag.
+ *
+ * @param string $url
+ * @param string $icon  HTML entity / emoji
+ * @param string $label Plain text label
+ * @return string HTML
+ */
+function local_teacher_commissions_navbar_link(string $url, string $icon, string $label): string {
+    global $PAGE;
+    $active = strpos($PAGE->url->out(false), '/local/teacher_commissions/') !== false;
+    $style  = 'display:inline-flex;align-items:center;gap:5px;white-space:nowrap;'
+            . 'font-weight:600;font-size:.88rem;text-decoration:none;'
+            . 'padding:6px 12px;border-radius:8px;transition:background .15s;'
+            . ($active
+                ? 'background:rgba(37,99,235,.12);color:#1d4ed8;'
+                : 'color:inherit;');
+    return '<a href="' . s($url) . '" style="' . $style . '">'
+         . $icon . ' ' . s($label)
+         . '</a>';
+}
+
+/**
+ * Serve files from local_teacher_commissions file areas.
+ */
+function local_teacher_commissions_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options = []) {
+    require_login();
+    if ($filearea !== 'payout_receipts') {
+        return false;
+    }
+    require_capability('local/teacher_commissions:viewadmindashboard', context_system::instance());
+    $itemid   = (int) array_shift($args);
+    $filename = array_pop($args);
+    $filepath = $args ? ('/' . implode('/', $args) . '/') : '/';
+    $fs   = get_file_storage();
+    $file = $fs->get_file($context->id, 'local_teacher_commissions', $filearea, $itemid, $filepath, $filename);
+    if (!$file) {
+        return false;
+    }
+    send_stored_file($file, 0, 0, $forcedownload, $options);
+}
+
+/**
  * Inject commission navigation items into Moodle's navigation tree.
  *
  * @param global_navigation $nav

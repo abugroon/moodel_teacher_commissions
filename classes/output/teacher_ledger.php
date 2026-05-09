@@ -69,22 +69,34 @@ class teacher_ledger implements renderable, templatable {
         }
 
         $pouts = [];
+        $ctx   = \context_system::instance();
         foreach ($this->payouts as $p) {
+            $receipt_url = '';
+            if (!empty($p->receipt_file)) {
+                $receipt_url = \moodle_url::make_pluginfile_url(
+                    $ctx->id,
+                    'local_teacher_commissions',
+                    'payout_receipts',
+                    $p->id,
+                    '/',
+                    $p->receipt_file,
+                    true
+                )->out(false);
+            }
             $pouts[] = [
                 'date'        => userdate($p->timecreated, get_string('strftimedatetime', 'langconfig')),
                 'amount'      => number_format($p->amount, 2),
                 'currency'    => $p->currency,
                 'admin'       => $p->admin_firstname . ' ' . $p->admin_lastname,
                 'notes'       => $p->notes ?? '',
+                'receipt_url' => $receipt_url,
             ];
         }
 
         return [
             'teachername'       => $s->firstname . ' ' . $s->lastname,
-            'commission_percent'=> number_format($s->commission_percent, 2),
             'courses_owned'     => $s->courses_owned,
             'paid_enrollments'  => $s->paid_enrollments,
-            'total_sales'       => number_format($s->total_sales, 2),
             'earned'            => number_format($s->earned, 2),
             'paid_out'          => number_format($s->paid, 2),
             'balance'           => number_format($s->balance, 2),

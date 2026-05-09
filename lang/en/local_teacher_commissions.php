@@ -163,5 +163,11 @@ $string['privacy:metadata:local_tc_payouts:adminid']                 = 'The ID o
 $string['privacy:metadata:local_tc_payouts:notes']                   = 'Optional notes added by the admin.';
 $string['privacy:metadata:local_tc_payouts:timecreated']             = 'The time this payout was processed.';
 
+// Payout receipt.
+$string['receipt']                = 'Receipt';
+$string['download_receipt']       = 'Download Receipt';
+$string['receipt_file']           = 'Payment Receipt (PDF/JPG/PNG, max 5 MB)';
+$string['no_receipt']             = '—';
+
 // Help strings.
 $string['commission_rate_label_help'] = 'Enter the commission percentage (0–100) to apply to all sales for this teacher. For example: 15 means 15% of each course sale goes to the teacher.';

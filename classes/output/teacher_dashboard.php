@@ -37,10 +37,9 @@ class teacher_dashboard implements renderable, templatable {
     public function export_for_template(renderer_base $output): array {
         $s = $this->summary;
         return [
+            'teachername'       => ($s->firstname ?? '') . ' ' . ($s->lastname ?? ''),
             'courses_owned'     => $s->courses_owned,
             'paid_enrollments'  => $s->paid_enrollments,
-            'total_sales'       => number_format($s->total_sales, 2),
-            'commission_percent'=> number_format($s->commission_percent, 2),
             'earned'            => number_format($s->earned, 2),
             'paid'              => number_format($s->paid, 2),
             'balance'           => number_format($s->balance, 2),

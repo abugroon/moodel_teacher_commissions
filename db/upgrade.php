@@ -26,11 +26,14 @@ function xmldb_local_teacher_commissions_upgrade(int $oldversion): bool {
     global $DB;
     $dbman = $DB->get_manager();
 
-    // Future upgrade steps go here, e.g.:
-    // if ($oldversion < 2024020100) {
-    //     // Add new column ...
-    //     upgrade_plugin_savepoint(true, 2024020100, 'local', 'teacher_commissions');
-    // }
+    if ($oldversion < 2024010102) {
+        $table = new xmldb_table('local_tc_payouts');
+        $field = new xmldb_field('receipt_file', XMLDB_TYPE_CHAR, '255', null, null, null, null, 'notes');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        upgrade_plugin_savepoint(true, 2024010102, 'local', 'teacher_commissions');
+    }
 
     return true;
 }

@@ -45,7 +45,8 @@ class payout_manager {
         int $teacherid,
         float $amount,
         string $currency = 'USD',
-        string $notes = ''
+        string $notes = '',
+        string $receipt_file = ''
     ): \stdClass {
         global $DB, $USER;
 
@@ -71,12 +72,13 @@ class payout_manager {
 
             // 1. Insert payout record.
             $payout = (object) [
-                'teacherid'   => $teacherid,
-                'amount'      => $amount,
-                'currency'    => $currency,
-                'notes'       => $notes,
-                'adminid'     => $USER->id,
-                'timecreated' => $now,
+                'teacherid'    => $teacherid,
+                'amount'       => $amount,
+                'currency'     => $currency,
+                'notes'        => $notes,
+                'receipt_file' => $receipt_file,
+                'adminid'      => $USER->id,
+                'timecreated'  => $now,
             ];
             $payout->id = $DB->insert_record('local_tc_payouts', $payout);
 

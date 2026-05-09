@@ -1,158 +1,328 @@
 {{!
-    Teacher commission ledger / full statement template.
+    Teacher commission ledger — unified modern style.
     @package   local_teacher_commissions
     @copyright 2024 Your Organization
     @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
 }}
-<div class="local-tc-teacher-ledger">
+<style>
+:root {
+    --tc-primary:  #2563eb;
+    --tc-success:  #059669;
+    --tc-warning:  #d97706;
+    --tc-purple:   #7c3aed;
+    --tc-dark:     #1e293b;
+    --tc-muted:    #64748b;
+    --tc-card:     #ffffff;
+    --tc-border:   #e2e8f0;
+}
+.tc-wrapper {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px 16px 52px;
+    font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+}
+.tc-hero {
+    background: linear-gradient(135deg, #1e293b 0%, #1e3a6e 55%, #2563eb 100%);
+    border-radius: 20px;
+    padding: 28px 36px;
+    color: #fff;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    position: relative;
+    overflow: hidden;
+}
+.tc-hero::before {
+    content: '';
+    position: absolute;
+    top: -50px; left: -50px;
+    width: 200px; height: 200px;
+    background: rgba(255,255,255,.04);
+    border-radius: 50%;
+    pointer-events: none;
+}
+.tc-hero h2 { font-size: 1.4rem; font-weight: 800; margin: 0 0 4px; }
+.tc-hero p  { margin: 0; opacity: .75; font-size: .88rem; }
+.tc-hero-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.tc-btn-outline {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 18px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: .82rem;
+    text-decoration: none;
+    border: 1.5px solid rgba(255,255,255,.4);
+    color: #fff;
+    background: rgba(255,255,255,.1);
+    transition: background .15s;
+    white-space: nowrap;
+}
+.tc-btn-outline:hover { background: rgba(255,255,255,.2); color: #fff; text-decoration: none; }
 
-    <div class="d-flex justify-content-end align-items-center mb-3">
-        <a href="{{{url_back}}}" class="btn btn-secondary">
-            {{# str}} back_to_dashboard, local_teacher_commissions {{/ str}}
-        </a>
-    </div>
+.tc-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(155px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+.tc-stat-card {
+    background: var(--tc-card);
+    border-radius: 14px;
+    padding: 20px 16px;
+    text-align: center;
+    box-shadow: 0 1px 8px rgba(0,0,0,.08);
+    border: 1px solid var(--tc-border);
+    border-bottom: 4px solid transparent;
+    transition: transform .15s;
+}
+.tc-stat-card:hover { transform: translateY(-2px); }
+.tc-stat-card.c-blue   { border-bottom-color: var(--tc-primary); }
+.tc-stat-card.c-gray   { border-bottom-color: #94a3b8; }
+.tc-stat-card.c-green  { border-bottom-color: var(--tc-success); }
+.tc-stat-card.c-purple { border-bottom-color: var(--tc-purple); }
+.tc-stat-card.c-amber  { border-bottom-color: var(--tc-warning); }
+.tc-stat-card .sc-icon  { font-size: 1.5rem; margin-bottom: 8px; }
+.tc-stat-card .sc-label { font-size: .7rem; color: var(--tc-muted); font-weight: 600; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 4px; }
+.tc-stat-card .sc-value { font-size: 1.4rem; font-weight: 800; line-height: 1.1; color: var(--tc-dark); }
+.tc-stat-card.c-blue   .sc-value { color: #1d4ed8; }
+.tc-stat-card.c-green  .sc-value { color: #065f46; }
+.tc-stat-card.c-purple .sc-value { color: #5b21b6; }
+.tc-stat-card.c-amber  .sc-value { color: #92400e; }
 
-    {{! Summary cards }}
-    <div class="row mb-4">
-        <div class="col-sm-6 col-md-2 mb-2">
-            <div class="card text-center border-primary">
-                <div class="card-body p-2">
-                    <div class="small text-muted">{{# str}} commission_percent, local_teacher_commissions {{/ str}}</div>
-                    <div class="h5 mb-0">{{commission_percent}}%</div>
-                </div>
-            </div>
+.tc-panel {
+    background: var(--tc-card);
+    border-radius: 16px;
+    box-shadow: 0 1px 8px rgba(0,0,0,.08);
+    border: 1px solid var(--tc-border);
+    margin-bottom: 24px;
+    overflow: hidden;
+}
+.tc-panel-hdr {
+    padding: 16px 22px;
+    font-weight: 700;
+    font-size: .93rem;
+    color: var(--tc-dark);
+    border-bottom: 1px solid var(--tc-border);
+    background: #f8fafc;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.tc-panel-hdr.hdr-dark {
+    background: var(--tc-dark);
+    color: #fff;
+    border: none;
+}
+.tc-panel-hdr.hdr-green {
+    background: linear-gradient(90deg, #059669 0%, #047857 100%);
+    color: #fff;
+    border: none;
+}
+.tc-tbl { width: 100%; border-collapse: collapse; }
+.tc-tbl th {
+    padding: 12px 16px;
+    font-size: .72rem;
+    font-weight: 700;
+    color: #fff;
+    background: var(--tc-dark);
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    text-align: left;
+}
+.tc-tbl td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: .86rem;
+    color: #334155;
+    vertical-align: middle;
+}
+.tc-tbl tr:last-child td { border-bottom: none; }
+.tc-tbl tr:hover td { background: #f8faff; }
+
+.sbadge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: .73rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+.sb-pending  { background: #fef3c7; color: #92400e; }
+.sb-paid     { background: #dbeafe; color: #1d4ed8; }
+
+.tc-alert {
+    padding: 16px 22px;
+    font-size: .88rem;
+    color: var(--tc-muted);
+    text-align: center;
+}
+
+.tc-back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--tc-muted);
+    font-size: .85rem;
+    text-decoration: none;
+    margin-bottom: 20px;
+    font-weight: 600;
+}
+.tc-back-btn:hover { color: var(--tc-dark); text-decoration: none; }
+
+.receipt-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: .78rem;
+    font-weight: 700;
+    color: var(--tc-primary);
+    text-decoration: none;
+}
+.receipt-link:hover { text-decoration: underline; }
+
+@media (max-width: 600px) {
+    .tc-hero { padding: 20px; }
+    .tc-stats { grid-template-columns: 1fr 1fr; }
+}
+</style>
+
+<div class="tc-wrapper">
+
+    <a href="{{{url_back}}}" class="tc-back-btn">&#x2190; {{# str}} back_to_dashboard, local_teacher_commissions {{/ str}}</a>
+
+    <!-- Hero -->
+    <div class="tc-hero">
+        <div>
+            <h2>&#x1F4CB; {{teachername}}</h2>
+            <p>{{# str}} nav_teacher_ledger, local_teacher_commissions {{/ str}}</p>
         </div>
-        <div class="col-sm-6 col-md-2 mb-2">
-            <div class="card text-center">
-                <div class="card-body p-2">
-                    <div class="small text-muted">{{# str}} total_sales, local_teacher_commissions {{/ str}}</div>
-                    <div class="h5 mb-0">{{total_sales}}</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-sm-6 col-md-2 mb-2">
-            <div class="card text-center border-success">
-                <div class="card-body p-2">
-                    <div class="small text-muted">{{# str}} total_commission_earned, local_teacher_commissions {{/ str}}</div>
-                    <div class="h5 mb-0 text-success">{{earned}}</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-sm-6 col-md-2 mb-2">
-            <div class="card text-center border-info">
-                <div class="card-body p-2">
-                    <div class="small text-muted">{{# str}} total_commission_paid, local_teacher_commissions {{/ str}}</div>
-                    <div class="h5 mb-0 text-info">{{paid_out}}</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-sm-6 col-md-2 mb-2">
-            <div class="card text-center border-warning">
-                <div class="card-body p-2">
-                    <div class="small text-muted">{{# str}} current_balance, local_teacher_commissions {{/ str}}</div>
-                    <div class="h5 mb-0 fw-bold">{{balance}} {{currency}}</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-sm-6 col-md-2 mb-2 d-flex align-items-center">
-            <div class="w-100">
-                <a href="{{{url_export_pdf}}}" class="btn btn-sm btn-outline-danger w-100 mb-1">
-                    <i class="fa fa-file-pdf-o"></i> {{# str}} export_pdf, local_teacher_commissions {{/ str}}
-                </a>
-                <a href="{{{url_export_excel}}}" class="btn btn-sm btn-outline-success w-100">
-                    <i class="fa fa-file-excel-o"></i> {{# str}} export_excel, local_teacher_commissions {{/ str}}
-                </a>
-            </div>
+        <div class="tc-hero-actions">
+            <a href="{{{url_export_pdf}}}" class="tc-btn-outline">&#x1F4C4; {{# str}} export_pdf, local_teacher_commissions {{/ str}}</a>
+            <a href="{{{url_export_excel}}}" class="tc-btn-outline">&#x1F4CA; {{# str}} export_excel, local_teacher_commissions {{/ str}}</a>
+            {{# is_admin}}
+            <a href="{{{url_payout}}}" class="tc-btn-outline" style="background:rgba(5,150,105,.3);border-color:rgba(5,150,105,.6);">
+                &#x1F4B3; {{# str}} pay_commission, local_teacher_commissions {{/ str}}
+            </a>
+            {{/ is_admin}}
         </div>
     </div>
 
-    {{# is_admin}}
-    <div class="mb-3">
-        <a href="{{{url_payout}}}" class="btn btn-success">
-            <i class="fa fa-money"></i> {{# str}} pay_commission, local_teacher_commissions {{/ str}}
-        </a>
+    <!-- Summary Stats -->
+    <div class="tc-stats">
+        <div class="tc-stat-card c-blue">
+            <div class="sc-icon">&#x1F4DA;</div>
+            <div class="sc-label">{{# str}} my_courses, local_teacher_commissions {{/ str}}</div>
+            <div class="sc-value">{{courses_owned}}</div>
+        </div>
+        <div class="tc-stat-card c-gray">
+            <div class="sc-icon">&#x1F464;</div>
+            <div class="sc-label">{{# str}} my_paid_enrollments, local_teacher_commissions {{/ str}}</div>
+            <div class="sc-value">{{paid_enrollments}}</div>
+        </div>
+        <div class="tc-stat-card c-green">
+            <div class="sc-icon">&#x2705;</div>
+            <div class="sc-label">{{# str}} my_earned_commissions, local_teacher_commissions {{/ str}}</div>
+            <div class="sc-value">{{earned}} <span style="font-size:.6rem;opacity:.7;">{{currency}}</span></div>
+        </div>
+        <div class="tc-stat-card c-purple">
+            <div class="sc-icon">&#x1F4B8;</div>
+            <div class="sc-label">{{# str}} my_paid_commissions, local_teacher_commissions {{/ str}}</div>
+            <div class="sc-value">{{paid_out}} <span style="font-size:.6rem;opacity:.7;">{{currency}}</span></div>
+        </div>
+        <div class="tc-stat-card c-amber">
+            <div class="sc-icon">&#x1F3E6;</div>
+            <div class="sc-label">{{# str}} my_outstanding_balance, local_teacher_commissions {{/ str}}</div>
+            <div class="sc-value">{{balance}} <span style="font-size:.6rem;opacity:.7;">{{currency}}</span></div>
+        </div>
     </div>
-    {{/ is_admin}}
 
-    {{! Commission Transactions }}
-    <h3>{{# str}} commission_earned, local_teacher_commissions {{/ str}}</h3>
-
-    {{# has_transactions}}
-    <div class="table-responsive mb-4">
-        <table class="table table-bordered table-sm generaltable">
-            <thead class="table-light">
-                <tr>
-                    <th>{{# str}} date, local_teacher_commissions {{/ str}}</th>
-                    <th>{{# str}} course, local_teacher_commissions {{/ str}}</th>
-                    <th>{{# str}} student, local_teacher_commissions {{/ str}}</th>
-                    <th class="text-end">{{# str}} sale_amount, local_teacher_commissions {{/ str}}</th>
-                    <th class="text-center">%</th>
-                    <th class="text-end">{{# str}} commission_earned, local_teacher_commissions {{/ str}}</th>
-                    <th class="text-center">{{# str}} status, local_teacher_commissions {{/ str}}</th>
-                </tr>
-            </thead>
-            <tbody>
-                {{# transactions}}
-                <tr>
-                    <td class="text-nowrap">{{date}}</td>
-                    <td>{{coursename}}</td>
-                    <td>{{student}}</td>
-                    <td class="text-end">{{saleamount}} {{currency}}</td>
-                    <td class="text-center">{{commission_pct}}%</td>
-                    <td class="text-end fw-bold">{{commission}} {{currency}}</td>
-                    <td class="text-center">
-                        {{# is_paid}}
-                        <span class="badge text-bg-success">{{status_label}}</span>
-                        {{/ is_paid}}
-                        {{^ is_paid}}
-                        <span class="badge text-bg-warning">{{status_label}}</span>
-                        {{/ is_paid}}
-                    </td>
-                </tr>
-                {{/ transactions}}
-            </tbody>
-        </table>
+    <!-- Commission Transactions -->
+    <div class="tc-panel">
+        <div class="tc-panel-hdr hdr-dark">&#x1F4CA; {{# str}} commission_earned, local_teacher_commissions {{/ str}}</div>
+        {{# has_transactions}}
+        <div style="overflow-x:auto;">
+            <table class="tc-tbl">
+                <thead>
+                    <tr>
+                        <th>{{# str}} date, local_teacher_commissions {{/ str}}</th>
+                        <th>{{# str}} course, local_teacher_commissions {{/ str}}</th>
+                        <th>{{# str}} student, local_teacher_commissions {{/ str}}</th>
+                        <th style="text-align:right;">{{# str}} commission_earned, local_teacher_commissions {{/ str}}</th>
+                        <th style="text-align:center;">{{# str}} status, local_teacher_commissions {{/ str}}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{# transactions}}
+                    <tr>
+                        <td style="white-space:nowrap;color:#94a3b8;font-size:.8rem;">{{date}}</td>
+                        <td style="max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{coursename}}</td>
+                        <td style="font-weight:600;">{{student}}</td>
+                        <td style="text-align:right;font-weight:800;color:#065f46;">{{commission}} {{currency}}</td>
+                        <td style="text-align:center;">
+                            {{# is_paid}}
+                            <span class="sbadge sb-paid">{{status_label}}</span>
+                            {{/ is_paid}}
+                            {{^ is_paid}}
+                            <span class="sbadge sb-pending">{{status_label}}</span>
+                            {{/ is_paid}}
+                        </td>
+                    </tr>
+                    {{/ transactions}}
+                </tbody>
+            </table>
+        </div>
+        {{/ has_transactions}}
+        {{^ has_transactions}}
+        <div class="tc-alert">{{# str}} no_transactions, local_teacher_commissions {{/ str}}</div>
+        {{/ has_transactions}}
     </div>
-    {{/ has_transactions}}
 
-    {{^ has_transactions}}
-    <div class="alert alert-info mb-4">
-        {{# str}} no_transactions, local_teacher_commissions {{/ str}}
+    <!-- Payout History -->
+    <div class="tc-panel">
+        <div class="tc-panel-hdr hdr-green">&#x1F4B3; {{# str}} payout_history, local_teacher_commissions {{/ str}}</div>
+        {{# has_payouts}}
+        <div style="overflow-x:auto;">
+            <table class="tc-tbl">
+                <thead>
+                    <tr>
+                        <th>{{# str}} payout_date, local_teacher_commissions {{/ str}}</th>
+                        <th style="text-align:right;">{{# str}} payout_amount_col, local_teacher_commissions {{/ str}}</th>
+                        <th>{{# str}} processed_by, local_teacher_commissions {{/ str}}</th>
+                        <th>{{# str}} notes, local_teacher_commissions {{/ str}}</th>
+                        <th>{{# str}} receipt, local_teacher_commissions {{/ str}}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{# payouts}}
+                    <tr>
+                        <td style="white-space:nowrap;color:#94a3b8;font-size:.8rem;">{{date}}</td>
+                        <td style="text-align:right;font-weight:800;color:#065f46;">{{amount}} {{currency}}</td>
+                        <td style="font-size:.83rem;">{{admin}}</td>
+                        <td style="font-size:.83rem;color:var(--tc-muted);">{{notes}}</td>
+                        <td>
+                            {{# receipt_url}}
+                            <a href="{{{receipt_url}}}" target="_blank" class="receipt-link">
+                                &#x1F4CE; {{# str}} download_receipt, local_teacher_commissions {{/ str}}
+                            </a>
+                            {{/ receipt_url}}
+                            {{^ receipt_url}}
+                            <span style="color:#94a3b8;font-size:.8rem;">—</span>
+                            {{/ receipt_url}}
+                        </td>
+                    </tr>
+                    {{/ payouts}}
+                </tbody>
+            </table>
+        </div>
+        {{/ has_payouts}}
+        {{^ has_payouts}}
+        <div class="tc-alert">{{# str}} no_payouts, local_teacher_commissions {{/ str}}</div>
+        {{/ has_payouts}}
     </div>
-    {{/ has_transactions}}
-
-    {{! Payout History }}
-    <h3>{{# str}} payout_history, local_teacher_commissions {{/ str}}</h3>
-
-    {{# has_payouts}}
-    <div class="table-responsive">
-        <table class="table table-bordered table-sm generaltable">
-            <thead class="table-light">
-                <tr>
-                    <th>{{# str}} payout_date, local_teacher_commissions {{/ str}}</th>
-                    <th class="text-end">{{# str}} payout_amount_col, local_teacher_commissions {{/ str}}</th>
-                    <th>{{# str}} processed_by, local_teacher_commissions {{/ str}}</th>
-                    <th>{{# str}} notes, local_teacher_commissions {{/ str}}</th>
-                </tr>
-            </thead>
-            <tbody>
-                {{# payouts}}
-                <tr>
-                    <td class="text-nowrap">{{date}}</td>
-                    <td class="text-end text-success fw-bold">{{amount}} {{currency}}</td>
-                    <td>{{admin}}</td>
-                    <td>{{notes}}</td>
-                </tr>
-                {{/ payouts}}
-            </tbody>
-        </table>
-    </div>
-    {{/ has_payouts}}
-
-    {{^ has_payouts}}
-    <div class="alert alert-info">
-        {{# str}} no_payouts, local_teacher_commissions {{/ str}}
-    </div>
-    {{/ has_payouts}}
 
 </div>

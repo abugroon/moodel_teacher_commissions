@@ -71,7 +71,8 @@
         <FIELD NAME="teacherid"   TYPE="int"    LENGTH="10" NOTNULL="true"  DEFAULT="0"/>
         <FIELD NAME="amount"      TYPE="number" LENGTH="10" DECIMALS="2"    NOTNULL="true" DEFAULT="0.00"/>
         <FIELD NAME="currency"    TYPE="char"   LENGTH="3"  NOTNULL="true"  DEFAULT="USD"/>
-        <FIELD NAME="notes"       TYPE="text"   NOTNULL="false"/>
+        <FIELD NAME="notes"        TYPE="text"   NOTNULL="false"/>
+        <FIELD NAME="receipt_file" TYPE="char"  LENGTH="255" NOTNULL="false"/>
         <FIELD NAME="adminid"     TYPE="int"    LENGTH="10" NOTNULL="true"  DEFAULT="0"/>
         <FIELD NAME="timecreated" TYPE="int"    LENGTH="10" NOTNULL="true"  DEFAULT="0"/>
       </FIELDS>
