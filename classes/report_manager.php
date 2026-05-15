@@ -156,9 +156,54 @@ class report_manager {
     }
 
     /**
+     * Return commission totals grouped by main marketer.
+     *
+     * @param array $filters  Same filter array accepted by get_filtered_transactions().
+     * @return array  Each row: stdClass{mainmarketerid, marketername, record_count, total_sales, total_commissions}
+     */
+    public static function get_marketer_grouped_summary(array $filters = []): array {
+        global $DB;
+
+        [$wheresql, $params] = self::build_where($filters);
+
+        $sql = "SELECT COALESCE(t.mainmarketerid, 0) AS mainmarketerid,
+                       COUNT(t.id)                                      AS record_count,
+                       COALESCE(SUM(t.saleamount), 0)                  AS total_sales,
+                       COALESCE(SUM(t.commissionamount), 0)            AS total_commissions
+                  FROM {local_tc_transactions} t
+                  JOIN {course} c ON c.id = t.courseid
+                 WHERE {$wheresql}
+              GROUP BY t.mainmarketerid
+              ORDER BY total_commissions DESC";
+
+        $rows = $DB->get_records_sql($sql, $params);
+
+        // local_ref_marketer_profile has no name field — always resolve name from user table.
+        $dbman       = $DB->get_manager();
+        $has_profile = $dbman->table_exists(new \xmldb_table('local_ref_marketer_profile'));
+
+        $result = [];
+        foreach ($rows as $row) {
+            $mid  = (int)$row->mainmarketerid;
+            $name = get_string('no_referral_marketer', 'local_teacher_commissions');
+            if ($mid > 0) {
+                // Resolve from user table (local_ref_marketer_profile has no name field).
+                $u = $DB->get_record('user', ['id' => $mid], 'firstname, lastname', IGNORE_MISSING);
+                if ($u) {
+                    $name = fullname($u);
+                }
+            }
+            $row->marketername = $name;
+            $result[] = $row;
+        }
+
+        return $result;
+    }
+
+    /**
      * Build WHERE clause and params array from filter array.
      *
-     * @param array $filters
+     * @param array $filters  Keys: teacherid, courseid, mainmarketerid, datefrom, dateto.
      * @return array  [$wheresql, $params]
      */
     private static function build_where(array $filters): array {
@@ -172,6 +217,10 @@ class report_manager {
         if (!empty($filters['courseid'])) {
             $where[]           = 't.courseid = :cid';
             $params['cid']     = (int) $filters['courseid'];
+        }
+        if (!empty($filters['mainmarketerid'])) {
+            $where[]           = 't.mainmarketerid = :mmid';
+            $params['mmid']    = (int) $filters['mainmarketerid'];
         }
         if (!empty($filters['datefrom'])) {
             $where[]           = 't.timecreated >= :datefrom';

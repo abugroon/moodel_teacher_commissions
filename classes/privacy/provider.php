@@ -77,6 +77,18 @@ class provider implements
             'privacy:metadata:local_tc_payouts'
         );
 
+        $collection->add_database_table(
+            'local_tc_withdrawal_requests',
+            [
+                'teacherid'      => 'privacy:metadata:local_tc_withdrawal_requests:teacherid',
+                'mainmarketerid' => 'privacy:metadata:local_tc_withdrawal_requests:mainmarketerid',
+                'amount'         => 'privacy:metadata:local_tc_withdrawal_requests:amount',
+                'status'         => 'privacy:metadata:local_tc_withdrawal_requests:status',
+                'timecreated'    => 'privacy:metadata:local_tc_withdrawal_requests:timecreated',
+            ],
+            'privacy:metadata:local_tc_withdrawal_requests'
+        );
+
         return $collection;
     }
 
@@ -92,10 +104,11 @@ class provider implements
                   FROM {context} ctx
                  WHERE ctx.contextlevel = :level
                    AND (
-                       EXISTS (SELECT 1 FROM {local_tc_settings}     WHERE userid    = :uid1)
-                    OR EXISTS (SELECT 1 FROM {local_tc_transactions}  WHERE teacherid = :uid2)
-                    OR EXISTS (SELECT 1 FROM {local_tc_transactions}  WHERE studentid = :uid3)
-                    OR EXISTS (SELECT 1 FROM {local_tc_payouts}       WHERE teacherid = :uid4)
+                       EXISTS (SELECT 1 FROM {local_tc_settings}              WHERE userid    = :uid1)
+                    OR EXISTS (SELECT 1 FROM {local_tc_transactions}           WHERE teacherid = :uid2)
+                    OR EXISTS (SELECT 1 FROM {local_tc_transactions}           WHERE studentid = :uid3)
+                    OR EXISTS (SELECT 1 FROM {local_tc_payouts}                WHERE teacherid = :uid4)
+                    OR EXISTS (SELECT 1 FROM {local_tc_withdrawal_requests}    WHERE teacherid = :uid5)
                    )";
 
         $contextlist->add_from_sql($sql, [
@@ -104,6 +117,7 @@ class provider implements
             'uid2'  => $userid,
             'uid3'  => $userid,
             'uid4'  => $userid,
+            'uid5'  => $userid,
         ]);
 
         return $contextlist;
@@ -115,10 +129,11 @@ class provider implements
             return;
         }
 
-        $userlist->add_from_table('local_tc_settings',    'userid');
-        $userlist->add_from_table('local_tc_transactions', 'teacherid');
-        $userlist->add_from_table('local_tc_transactions', 'studentid');
-        $userlist->add_from_table('local_tc_payouts',      'teacherid');
+        $userlist->add_from_table('local_tc_settings',             'userid');
+        $userlist->add_from_table('local_tc_transactions',          'teacherid');
+        $userlist->add_from_table('local_tc_transactions',          'studentid');
+        $userlist->add_from_table('local_tc_payouts',               'teacherid');
+        $userlist->add_from_table('local_tc_withdrawal_requests',   'teacherid');
     }
 
     // -------------------------------------------------------------------------
@@ -156,6 +171,13 @@ class provider implements
         if ($payouts) {
             writer::with_context(\context_system::instance())
                 ->export_data(['Commission Payouts'], (object) ['payouts' => array_values($payouts)]);
+        }
+
+        // Withdrawal requests.
+        $wrequests = $DB->get_records('local_tc_withdrawal_requests', ['teacherid' => $userid]);
+        if ($wrequests) {
+            writer::with_context(\context_system::instance())
+                ->export_data(['Withdrawal Requests'], (object) ['requests' => array_values($wrequests)]);
         }
     }
 

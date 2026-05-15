@@ -31,7 +31,7 @@ class payout extends \moodleform {
         $teacherid   = $this->_customdata['teacherid']   ?? 0;
         $teachername = $this->_customdata['teachername'] ?? '';
         $balance     = $this->_customdata['balance']     ?? 0.0;
-        $currency    = $this->_customdata['currency']    ?? 'USD';
+        $currency    = $this->_customdata['currency']    ?? 'SDG';
 
         $mform->addElement('hidden', 'teacherid', $teacherid);
         $mform->setType('teacherid', PARAM_INT);

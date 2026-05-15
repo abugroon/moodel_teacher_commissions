@@ -128,6 +128,24 @@ class commission_manager {
      * @param string $notes           Optional notes.
      * @return int   New transaction id (or 0 if already exists).
      */
+    /**
+     * Create a commission transaction for a paid enrollment.
+     *
+     * Idempotent: if a transaction already exists for the same userenrolmentid
+     * it will not be duplicated (unique index in DB).
+     *
+     * @param int      $teacherid
+     * @param int      $courseid
+     * @param int      $studentid
+     * @param int      $enrolid             mdl_enrol.id
+     * @param int      $userenrolmentid     mdl_user_enrolments.id
+     * @param float    $saleamount
+     * @param string   $currency            ISO 4217 code.
+     * @param string   $notes
+     * @param int|null $referralmarketerid  Marketer userid who referred this student (null if none).
+     * @param int|null $mainmarketerid      Top-level main marketer userid (null if none).
+     * @return int New transaction id (or 0 if already exists).
+     */
     public static function create_transaction(
         int $teacherid,
         int $courseid,
@@ -135,8 +153,10 @@ class commission_manager {
         int $enrolid,
         int $userenrolmentid,
         float $saleamount,
-        string $currency = 'USD',
-        string $notes = ''
+        string $currency = 'SDG',
+        string $notes = '',
+        ?int $referralmarketerid = null,
+        ?int $mainmarketerid = null
     ): int {
         global $DB;
 
@@ -162,6 +182,8 @@ class commission_manager {
             'status'             => 'pending',
             'payoutid'           => null,
             'notes'              => $notes,
+            'referralmarketerid' => $referralmarketerid,
+            'mainmarketerid'     => $mainmarketerid,
             'timecreated'        => $now,
             'timemodified'       => $now,
         ];
@@ -187,7 +209,7 @@ class commission_manager {
         int $studentid,
         float $saleamount,
         float $commissionpercent = -1,
-        string $currency = 'USD',
+        string $currency = 'SDG',
         string $notes = ''
     ): int {
         global $DB;
@@ -276,7 +298,7 @@ class commission_manager {
             'paid'              => $paid,
             'balance'           => $balance,
             'currency'          => ($agg && $agg->currency) ? $agg->currency
-                : (get_config('local_teacher_commissions', 'default_currency') ?: 'USD'),
+                : (get_config('local_teacher_commissions', 'default_currency') ?: 'SDG'),
         ];
     }
 

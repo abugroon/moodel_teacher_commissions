@@ -95,6 +95,10 @@ function local_teacher_commissions_admin_nav(string $active = ''): string {
             'label' => get_string('nav_admin_dashboard', 'local_teacher_commissions'),
             'url'   => new moodle_url('/local/teacher_commissions/admin/index.php'),
         ],
+        'withdrawals' => [
+            'label' => get_string('nav_admin_withdrawals', 'local_teacher_commissions'),
+            'url'   => new moodle_url('/local/teacher_commissions/admin/withdrawals.php'),
+        ],
         'reports' => [
             'label' => get_string('nav_reports', 'local_teacher_commissions'),
             'url'   => new moodle_url('/local/teacher_commissions/admin/reports.php'),

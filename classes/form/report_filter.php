@@ -60,6 +60,28 @@ class report_filter extends \moodleform {
             get_string('filter_course', 'local_teacher_commissions'), $courses);
         $mform->setType('courseid', PARAM_INT);
 
+        // --- Marketer filter (only shown when referral plugin tables exist) ---
+        $dbman = $DB->get_manager();
+        if ($dbman->table_exists(new \xmldb_table('local_ref_marketer_profile'))) {
+            // local_ref_marketer_profile has no name field — join user table for display name.
+            $mrows = $DB->get_records_sql(
+                "SELECT mp.userid, mp.code, u.firstname, u.lastname
+                   FROM {local_ref_marketer_profile} mp
+              LEFT JOIN {user} u ON u.id = mp.userid
+                  WHERE mp.type = 'main'
+               ORDER BY u.firstname ASC, u.lastname ASC"
+            );
+            $marketers = [0 => get_string('all_marketers', 'local_teacher_commissions')];
+            foreach ($mrows as $mr) {
+                $dname = trim(($mr->firstname ?? '') . ' ' . ($mr->lastname ?? ''));
+                $marketers[$mr->userid] = ($dname !== '' ? $dname : '#' . $mr->userid)
+                                          . ' (' . $mr->code . ')';
+            }
+            $mform->addElement('select', 'mainmarketerid',
+                get_string('filter_marketer', 'local_teacher_commissions'), $marketers);
+            $mform->setType('mainmarketerid', PARAM_INT);
+        }
+
         // --- Period shortcut ---
         $periods = [
             'all'        => get_string('period_all',        'local_teacher_commissions'),

@@ -19,6 +19,7 @@ require_once(__DIR__ . '/../lib.php');
 
 use local_teacher_commissions\report_manager;
 use local_teacher_commissions\form\report_filter;
+use local_teacher_commissions\withdrawal_manager;
 
 require_login();
 $syscontext = context_system::instance();
@@ -50,8 +51,9 @@ if ($fdata = $form->get_data()) {
         if (!empty($fdata->datefrom)) $filters['datefrom'] = (int) $fdata->datefrom;
         if (!empty($fdata->dateto))   $filters['dateto']   = (int) $fdata->dateto + 86399; // end of day
     }
-    if (!empty($fdata->teacherid)) $filters['teacherid'] = (int) $fdata->teacherid;
-    if (!empty($fdata->courseid))  $filters['courseid']  = (int) $fdata->courseid;
+    if (!empty($fdata->teacherid))      $filters['teacherid']      = (int) $fdata->teacherid;
+    if (!empty($fdata->courseid))       $filters['courseid']       = (int) $fdata->courseid;
+    if (!empty($fdata->mainmarketerid)) $filters['mainmarketerid'] = (int) $fdata->mainmarketerid;
 }
 
 // ---- Export shortcuts ----
@@ -69,9 +71,10 @@ if ($exporttype === 'pdf') {
 $page    = optional_param('page', 0, PARAM_INT);
 $perpage = 50;
 
-$result  = report_manager::get_filtered_transactions($filters, $page, $perpage);
-$monthly = report_manager::get_monthly_summary($filters);
-$yearly  = report_manager::get_yearly_summary($filters);
+$result   = report_manager::get_filtered_transactions($filters, $page, $perpage);
+$monthly  = report_manager::get_monthly_summary($filters);
+$yearly   = report_manager::get_yearly_summary($filters);
+$bymarket = report_manager::get_marketer_grouped_summary($filters);
 
 // ---- Render ----
 echo $OUTPUT->header();
@@ -203,6 +206,30 @@ if (!empty($yearly)) {
         ];
     }
     echo html_writer::table($yt);
+}
+
+// ---- By-Marketer Summary ----
+if (!empty($bymarket)) {
+    echo $OUTPUT->heading(get_string('commission_by_marketer', 'local_teacher_commissions'), 3);
+
+    $bt             = new html_table();
+    $bt->head       = [
+        get_string('marketer_source',         'local_teacher_commissions'),
+        get_string('total_records',           'local_teacher_commissions'),
+        get_string('grand_total_sales',       'local_teacher_commissions'),
+        get_string('grand_total_commissions', 'local_teacher_commissions'),
+    ];
+    $bt->attributes['class'] = 'generaltable table table-bordered table-sm';
+
+    foreach ($bymarket as $bm) {
+        $bt->data[] = [
+            s($bm->marketername),
+            $bm->record_count,
+            number_format((float)$bm->total_sales, 2),
+            number_format((float)$bm->total_commissions, 2),
+        ];
+    }
+    echo html_writer::table($bt);
 }
 
 echo $OUTPUT->footer();

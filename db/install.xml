@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="local/teacher_commissions/db" VERSION="20240101"
+<XMLDB PATH="local/teacher_commissions/db" VERSION="20240103"
     COMMENT="XMLDB file for local_teacher_commissions plugin"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd">
@@ -8,7 +8,6 @@
     <!--
       local_tc_settings
       Stores commission percentage per teacher (userid=0 = global default).
-      One row per teacher; the global default has userid=0.
     -->
     <TABLE NAME="local_tc_settings" COMMENT="Teacher commission settings (userid=0 = global default)">
       <FIELDS>
@@ -28,42 +27,47 @@
     <!--
       local_tc_transactions
       One row per commission event (= one paid enrollment).
-      status: pending | paid
+      referralmarketerid: marketer (userid) who referred this student (sub OR main).
+      mainmarketerid: top-level main marketer userid in the chain (null if no referral).
     -->
     <TABLE NAME="local_tc_transactions" COMMENT="Commission transactions linked to paid enrollments">
       <FIELDS>
-        <FIELD NAME="id"                 TYPE="int"    LENGTH="10" NOTNULL="true"  SEQUENCE="true"/>
-        <FIELD NAME="teacherid"          TYPE="int"    LENGTH="10" NOTNULL="true"  DEFAULT="0"/>
-        <FIELD NAME="courseid"           TYPE="int"    LENGTH="10" NOTNULL="true"  DEFAULT="0"/>
-        <FIELD NAME="studentid"          TYPE="int"    LENGTH="10" NOTNULL="true"  DEFAULT="0"/>
-        <FIELD NAME="enrolid"            TYPE="int"    LENGTH="10" NOTNULL="true"  DEFAULT="0"    COMMENT="mdl_enrol.id"/>
-        <FIELD NAME="userenrolmentid"    TYPE="int"    LENGTH="10" NOTNULL="true"  DEFAULT="0"    COMMENT="mdl_user_enrolments.id"/>
-        <FIELD NAME="saleamount"         TYPE="number" LENGTH="10" DECIMALS="2"    NOTNULL="true" DEFAULT="0.00"/>
-        <FIELD NAME="commission_percent" TYPE="number" LENGTH="5"  DECIMALS="2"    NOTNULL="true" DEFAULT="0.00"/>
-        <FIELD NAME="commissionamount"   TYPE="number" LENGTH="10" DECIMALS="2"    NOTNULL="true" DEFAULT="0.00"/>
-        <FIELD NAME="currency"           TYPE="char"   LENGTH="3"  NOTNULL="true"  DEFAULT="USD"/>
-        <FIELD NAME="status"             TYPE="char"   LENGTH="20" NOTNULL="true"  DEFAULT="pending" COMMENT="pending|paid"/>
-        <FIELD NAME="payoutid"           TYPE="int"    LENGTH="10" NOTNULL="false"                COMMENT="FK to local_tc_payouts.id when paid"/>
-        <FIELD NAME="notes"              TYPE="text"   NOTNULL="false"/>
-        <FIELD NAME="timecreated"        TYPE="int"    LENGTH="10" NOTNULL="true"  DEFAULT="0"/>
-        <FIELD NAME="timemodified"       TYPE="int"    LENGTH="10" NOTNULL="true"  DEFAULT="0"/>
+        <FIELD NAME="id"                  TYPE="int"    LENGTH="10" NOTNULL="true"  SEQUENCE="true"/>
+        <FIELD NAME="teacherid"           TYPE="int"    LENGTH="10" NOTNULL="true"  DEFAULT="0"/>
+        <FIELD NAME="courseid"            TYPE="int"    LENGTH="10" NOTNULL="true"  DEFAULT="0"/>
+        <FIELD NAME="studentid"           TYPE="int"    LENGTH="10" NOTNULL="true"  DEFAULT="0"/>
+        <FIELD NAME="enrolid"             TYPE="int"    LENGTH="10" NOTNULL="true"  DEFAULT="0"    COMMENT="mdl_enrol.id"/>
+        <FIELD NAME="userenrolmentid"     TYPE="int"    LENGTH="10" NOTNULL="true"  DEFAULT="0"    COMMENT="mdl_user_enrolments.id"/>
+        <FIELD NAME="saleamount"          TYPE="number" LENGTH="10" DECIMALS="2"    NOTNULL="true" DEFAULT="0.00"/>
+        <FIELD NAME="commission_percent"  TYPE="number" LENGTH="5"  DECIMALS="2"    NOTNULL="true" DEFAULT="0.00"/>
+        <FIELD NAME="commissionamount"    TYPE="number" LENGTH="10" DECIMALS="2"    NOTNULL="true" DEFAULT="0.00"/>
+        <FIELD NAME="currency"            TYPE="char"   LENGTH="3"  NOTNULL="true"  DEFAULT="USD"/>
+        <FIELD NAME="status"              TYPE="char"   LENGTH="20" NOTNULL="true"  DEFAULT="pending" COMMENT="pending|paid"/>
+        <FIELD NAME="payoutid"            TYPE="int"    LENGTH="10" NOTNULL="false"                COMMENT="FK to local_tc_payouts.id when paid"/>
+        <FIELD NAME="notes"               TYPE="text"   NOTNULL="false"/>
+        <FIELD NAME="referralmarketerid"  TYPE="int"    LENGTH="10" NOTNULL="false"                COMMENT="Marketer userid who referred this student"/>
+        <FIELD NAME="mainmarketerid"      TYPE="int"    LENGTH="10" NOTNULL="false"                COMMENT="Top-level main marketer userid"/>
+        <FIELD NAME="timecreated"         TYPE="int"    LENGTH="10" NOTNULL="true"  DEFAULT="0"/>
+        <FIELD NAME="timemodified"        TYPE="int"    LENGTH="10" NOTNULL="true"  DEFAULT="0"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
       </KEYS>
       <INDEXES>
-        <INDEX NAME="idx_teacherid"       UNIQUE="false" FIELDS="teacherid"/>
-        <INDEX NAME="idx_courseid"        UNIQUE="false" FIELDS="courseid"/>
-        <INDEX NAME="idx_studentid"       UNIQUE="false" FIELDS="studentid"/>
-        <INDEX NAME="idx_status"          UNIQUE="false" FIELDS="status"/>
-        <INDEX NAME="idx_timecreated"     UNIQUE="false" FIELDS="timecreated"/>
-        <INDEX NAME="idx_userenrolmentid" UNIQUE="true"  FIELDS="userenrolmentid" COMMENT="Prevent duplicate commission for same enrollment"/>
+        <INDEX NAME="idx_teacherid"          UNIQUE="false" FIELDS="teacherid"/>
+        <INDEX NAME="idx_courseid"           UNIQUE="false" FIELDS="courseid"/>
+        <INDEX NAME="idx_studentid"          UNIQUE="false" FIELDS="studentid"/>
+        <INDEX NAME="idx_status"             UNIQUE="false" FIELDS="status"/>
+        <INDEX NAME="idx_timecreated"        UNIQUE="false" FIELDS="timecreated"/>
+        <INDEX NAME="idx_referralmarketerid" UNIQUE="false" FIELDS="referralmarketerid"/>
+        <INDEX NAME="idx_mainmarketerid"     UNIQUE="false" FIELDS="mainmarketerid"/>
+        <INDEX NAME="idx_userenrolmentid"    UNIQUE="true"  FIELDS="userenrolmentid" COMMENT="Prevent duplicate commission for same enrollment"/>
       </INDEXES>
     </TABLE>
 
     <!--
       local_tc_payouts
-      One row per payout processed by an admin.
+      One row per admin-processed payout.
     -->
     <TABLE NAME="local_tc_payouts" COMMENT="Commission payout records">
       <FIELDS>
@@ -82,6 +86,38 @@
       <INDEXES>
         <INDEX NAME="idx_teacherid"   UNIQUE="false" FIELDS="teacherid"/>
         <INDEX NAME="idx_timecreated" UNIQUE="false" FIELDS="timecreated"/>
+      </INDEXES>
+    </TABLE>
+
+    <!--
+      local_tc_withdrawal_requests
+      Teacher-initiated withdrawal requests, routed to the main marketer
+      who generated the sales for their commission group.
+      status: pending | approved | rejected | paid
+      mainmarketerid: stores the main marketer's userid (same FK pattern as referral plugin).
+    -->
+    <TABLE NAME="local_tc_withdrawal_requests" COMMENT="Teacher commission withdrawal requests routed to main marketers">
+      <FIELDS>
+        <FIELD NAME="id"             TYPE="int"    LENGTH="10" NOTNULL="true"  SEQUENCE="true"/>
+        <FIELD NAME="teacherid"      TYPE="int"    LENGTH="10" NOTNULL="true"  DEFAULT="0" COMMENT="Teacher userid"/>
+        <FIELD NAME="mainmarketerid" TYPE="int"    LENGTH="10" NOTNULL="true"  DEFAULT="0" COMMENT="Main marketer userid this request routes to"/>
+        <FIELD NAME="amount"         TYPE="number" LENGTH="10" DECIMALS="2"    NOTNULL="true" DEFAULT="0.00"/>
+        <FIELD NAME="currency"       TYPE="char"   LENGTH="3"  NOTNULL="true"  DEFAULT="USD"/>
+        <FIELD NAME="status"         TYPE="char"   LENGTH="20" NOTNULL="true"  DEFAULT="pending"/>
+        <FIELD NAME="notes"          TYPE="text"   NOTNULL="false"/>
+        <FIELD NAME="createdby"      TYPE="int"    LENGTH="10" NOTNULL="true"  DEFAULT="0"/>
+        <FIELD NAME="approvedby"     TYPE="int"    LENGTH="10" NOTNULL="false"/>
+        <FIELD NAME="timecreated"    TYPE="int"    LENGTH="10" NOTNULL="true"  DEFAULT="0"/>
+        <FIELD NAME="timemodified"   TYPE="int"    LENGTH="10" NOTNULL="true"  DEFAULT="0"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="idx_teacherid"      UNIQUE="false" FIELDS="teacherid"/>
+        <INDEX NAME="idx_mainmarketerid" UNIQUE="false" FIELDS="mainmarketerid"/>
+        <INDEX NAME="idx_status"         UNIQUE="false" FIELDS="status"/>
+        <INDEX NAME="idx_timecreated"    UNIQUE="false" FIELDS="timecreated"/>
       </INDEXES>
     </TABLE>
 

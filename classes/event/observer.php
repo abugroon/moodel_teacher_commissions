@@ -110,7 +110,7 @@ class observer {
         // Supports: enrol_paypal, enrol_fee, enrol_bank, and any plugin storing cost in enrol.cost.
         $cost     = isset($enrol->cost) ? (float) $enrol->cost : 0.0;
         $currency = isset($enrol->currency) ? $enrol->currency
-                  : (get_config('local_teacher_commissions', 'default_currency') ?: 'USD');
+                  : (get_config('local_teacher_commissions', 'default_currency') ?: 'SDG');
 
         if ($cost <= 0) {
             return;
@@ -121,6 +121,44 @@ class observer {
             return;
         }
 
+        // Resolve referral marketer chain from local_referral plugin (if installed).
+        $referralmarketerid = null;
+        $mainmarketerid     = null;
+
+        $dbman = $DB->get_manager();
+        if ($dbman->table_exists(new \xmldb_table('local_ref_users'))
+                && $dbman->table_exists(new \xmldb_table('local_ref_marketer_profile'))) {
+
+            $refuser = $DB->get_record(
+                'local_ref_users',
+                ['userid' => $studentid],
+                'marketerid',
+                IGNORE_MISSING
+            );
+
+            if ($refuser) {
+                // marketerid in local_ref_users stores the marketer's userid.
+                $profile = $DB->get_record(
+                    'local_ref_marketer_profile',
+                    ['userid' => (int)$refuser->marketerid],
+                    'userid, type, parent_userid',
+                    IGNORE_MISSING
+                );
+
+                if ($profile) {
+                    $referralmarketerid = (int)$profile->userid;
+
+                    if ($profile->type === 'sub' && !empty($profile->parent_userid)) {
+                        // Sub-marketer: main is the parent.
+                        $mainmarketerid = (int)$profile->parent_userid;
+                    } else {
+                        // Already a main marketer (or type not yet set).
+                        $mainmarketerid = (int)$profile->userid;
+                    }
+                }
+            }
+        }
+
         commission_manager::create_transaction(
             $teacherid,
             $courseid,
@@ -129,7 +167,9 @@ class observer {
             (int) $ue->id,
             $cost,
             $currency,
-            'Auto-generated from enrolment #' . $ue->id
+            'Auto-generated from enrolment #' . $ue->id,
+            $referralmarketerid,
+            $mainmarketerid
         );
     }
 }

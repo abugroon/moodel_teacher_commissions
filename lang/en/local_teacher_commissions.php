@@ -130,7 +130,12 @@ $string['settings_heading']           = 'Teacher Commissions Settings';
 $string['default_commission_percent'] = 'Default commission percentage';
 $string['default_commission_percent_desc'] = 'System-wide default commission percentage applied when no individual rate is set for a teacher.';
 $string['default_currency']           = 'Default currency';
-$string['default_currency_desc']      = 'ISO 4217 currency code (e.g. USD, EUR, GBP).';
+$string['default_currency_desc']      = 'ISO 4217 currency code (e.g. SDG, USD, EUR, GBP).';
+
+// Reports — marketer filter.
+$string['filter_marketer']       = 'Filter by Marketer';
+$string['all_marketers']         = 'All Marketers';
+$string['commission_by_marketer']= 'Commission Summary by Marketer';
 
 // Errors / misc.
 $string['error_nopermission']  = 'You do not have permission to access this page.';
@@ -171,3 +176,62 @@ $string['no_receipt']             = '—';
 
 // Help strings.
 $string['commission_rate_label_help'] = 'Enter the commission percentage (0–100) to apply to all sales for this teacher. For example: 15 means 15% of each course sale goes to the teacher.';
+
+// Marketer-grouped commission cards (teacher dashboard).
+$string['commissions_by_marketer']     = 'Commissions by Marketer';
+$string['marketer_source']             = 'Marketer';
+$string['main_marketer']               = 'Main Marketer';
+$string['show_sub_marketers']          = 'View contributing marketers';
+$string['total_earned']                = 'Earned';
+$string['paid_amount']                 = 'Paid';
+$string['remaining_balance']           = 'Balance';
+$string['request_withdrawal']          = 'Request Withdrawal';
+$string['no_balance_to_withdraw']      = 'No balance available to withdraw.';
+$string['no_referral_marketer']        = 'Direct / No referral';
+
+// Withdrawal request page.
+$string['submit_withdrawal_request']   = 'Submit Withdrawal Request';
+$string['withdrawal_request_sent']     = 'Withdrawal request submitted successfully. It has been routed to the marketer for review.';
+$string['max_amount']                  = 'Maximum';
+$string['notes_optional']              = 'Optional notes…';
+$string['my_withdrawal_requests']      = 'My Withdrawal Request History';
+
+// Status labels.
+$string['status']                      = 'Status';
+$string['date']                        = 'Date';
+$string['withdrawal_status_pending']   = 'Pending';
+$string['withdrawal_status_approved']  = 'Approved';
+$string['withdrawal_status_rejected']  = 'Rejected';
+$string['withdrawal_status_paid']      = 'Paid';
+
+// Error strings.
+$string['error_withdrawal_zeroamount']     = 'Withdrawal amount must be greater than zero.';
+$string['error_withdrawal_exceeds_balance']= 'Requested amount exceeds your available balance for this marketer group.';
+$string['error_nopermission']              = 'You do not have permission to perform this action.';
+
+// Capability strings.
+$string['local/teacher_commissions:requestwithdrawal'] = 'Submit a commission withdrawal request';
+$string['local/teacher_commissions:approvewithdrawal'] = 'Approve teacher commission withdrawal requests';
+
+// Admin withdrawal management.
+$string['nav_admin_withdrawals']           = 'Withdrawal Requests';
+$string['no_withdrawal_requests']          = 'No withdrawal requests found.';
+$string['withdrawal_status_updated']       = 'Withdrawal request status updated successfully.';
+$string['withdrawal_approve']              = 'Approve';
+$string['withdrawal_reject']              = 'Reject';
+$string['withdrawal_mark_paid']            = 'Mark as Paid';
+$string['confirm_approve_withdrawal']      = 'Are you sure you want to approve this withdrawal request?';
+$string['confirm_reject_withdrawal']       = 'Are you sure you want to reject this withdrawal request?';
+$string['confirm_pay_withdrawal']          = 'Are you sure you want to mark this withdrawal as paid?';
+$string['rejection_reason']                = 'Reason (optional)…';
+$string['payment_reference']               = 'Reference / notes…';
+$string['filter_status']                   = 'Filter by Status';
+$string['all_statuses']                    = 'All Statuses';
+
+// Privacy — withdrawal requests table.
+$string['privacy:metadata:local_tc_withdrawal_requests']              = 'Stores teacher withdrawal requests routed to main marketers.';
+$string['privacy:metadata:local_tc_withdrawal_requests:teacherid']    = 'Teacher user ID.';
+$string['privacy:metadata:local_tc_withdrawal_requests:mainmarketerid'] = 'Main marketer userid the request is routed to.';
+$string['privacy:metadata:local_tc_withdrawal_requests:amount']       = 'Amount requested.';
+$string['privacy:metadata:local_tc_withdrawal_requests:status']       = 'Request status.';
+$string['privacy:metadata:local_tc_withdrawal_requests:timecreated']  = 'Time the request was submitted.';

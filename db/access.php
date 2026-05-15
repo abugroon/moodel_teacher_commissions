@@ -63,4 +63,23 @@ $capabilities = [
             'teacher'        => CAP_ALLOW,
         ],
     ],
+
+    // Teacher can submit a withdrawal request for their own commissions.
+    'local/teacher_commissions:requestwithdrawal' => [
+        'captype'      => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes'   => [
+            'editingteacher' => CAP_ALLOW,
+            'teacher'        => CAP_ALLOW,
+        ],
+    ],
+
+    // Approve or reject teacher withdrawal requests (site admin or main marketer acting via UI).
+    'local/teacher_commissions:approvewithdrawal' => [
+        'captype'      => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes'   => [
+            'manager' => CAP_ALLOW,
+        ],
+    ],
 ];

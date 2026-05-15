@@ -44,7 +44,7 @@ class payout_manager {
     public static function process_payout(
         int $teacherid,
         float $amount,
-        string $currency = 'USD',
+        string $currency = 'SDG',
         string $notes = '',
         string $receipt_file = ''
     ): \stdClass {

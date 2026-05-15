@@ -40,7 +40,7 @@ if ($hassiteconfig) {
         'local_teacher_commissions/default_currency',
         get_string('default_currency',      'local_teacher_commissions'),
         get_string('default_currency_desc', 'local_teacher_commissions'),
-        'USD',
+        'SDG',
         PARAM_ALPHA
     ));
 
