@@ -26,7 +26,7 @@ $string['nav_teacher_dashboard'] = 'My Commissions';
 $string['nav_teacher_ledger']    = 'My Statement';
 
 // Admin dashboard.
-$string['admin_dashboard_title']   = 'Teacher Commission Dashboard';
+$string['admin_dashboard_title']   = '💰 Commission Dashboard';
 $string['teacher']                 = 'Teacher';
 $string['courses_owned']           = 'Courses Owned';
 $string['paid_enrollments']        = 'Paid Enrolments';
