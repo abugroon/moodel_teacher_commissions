@@ -248,7 +248,85 @@ class withdrawal_manager {
         $id = $DB->insert_record('local_tc_withdrawal_requests', $record);
         $transaction->allow_commit();
 
+        // Notify main marketer of the new request.
+        if ($mainmarketerid > 0) {
+            try {
+                self::notify_marketer_new_request($id, $teacherid, $mainmarketerid, $record->amount, $currency, $notes, $now);
+            } catch (\Throwable $e) {
+                // Non-fatal — do not fail the whole request if notification fails.
+                debugging('teacher_commissions: notification failed: ' . $e->getMessage(), DEBUG_DEVELOPER);
+            }
+        }
+
         return $id;
+    }
+
+    /**
+     * Send Moodle notification + email to the main marketer when a new withdrawal
+     * request is submitted.
+     */
+    private static function notify_marketer_new_request(
+        int    $requestid,
+        int    $teacherid,
+        int    $mainmarketerid,
+        float  $amount,
+        string $currency,
+        string $notes,
+        int    $timecreated
+    ): void {
+        global $DB, $CFG;
+
+        $marketer = $DB->get_record('user', ['id' => $mainmarketerid], '*', IGNORE_MISSING);
+        $teacher  = $DB->get_record('user', ['id' => $teacherid],     '*', IGNORE_MISSING);
+        if (!$marketer || !$teacher) {
+            return;
+        }
+
+        $manage_url   = (new \moodle_url('/local/teacher_commissions/admin/withdrawals.php'))->out(false);
+        $teacher_name = fullname($teacher);
+        $date_str     = userdate($timecreated, '%d/%m/%Y %H:%M');
+        $amount_str   = number_format($amount, 2) . ' ' . $currency;
+        $notes_str    = $notes !== '' ? $notes : '—';
+
+        $subject   = get_string('email_withdrawal_subject',   'local_teacher_commissions', $teacher_name);
+        $plaintext = get_string('email_withdrawal_plaintext', 'local_teacher_commissions', (object)[
+            'marketer_name' => fullname($marketer),
+            'teacher_name'  => $teacher_name,
+            'amount'        => $amount_str,
+            'date'          => $date_str,
+            'notes'         => $notes_str,
+            'url'           => $manage_url,
+        ]);
+        $html = get_string('email_withdrawal_html', 'local_teacher_commissions', (object)[
+            'marketer_name' => fullname($marketer),
+            'teacher_name'  => $teacher_name,
+            'amount'        => $amount_str,
+            'date'          => $date_str,
+            'notes'         => s($notes_str),
+            'url'           => $manage_url,
+        ]);
+
+        // Moodle in-app notification.
+        $msg = new \core\message\message();
+        $msg->component         = 'local_teacher_commissions';
+        $msg->name              = 'withdrawal_request';
+        $msg->userfrom          = $teacher;
+        $msg->userto            = $marketer;
+        $msg->subject           = $subject;
+        $msg->fullmessage       = $plaintext;
+        $msg->fullmessageformat = FORMAT_HTML;
+        $msg->fullmessagehtml   = $html;
+        $msg->smallmessage      = get_string('email_withdrawal_small', 'local_teacher_commissions', (object)[
+            'teacher_name' => $teacher_name,
+            'amount'       => $amount_str,
+        ]);
+        $msg->notification      = 1;
+        $msg->contexturl        = $manage_url;
+        $msg->contexturlname    = get_string('nav_admin_withdrawals', 'local_teacher_commissions');
+        message_send($msg);
+
+        // Direct email.
+        email_to_user($marketer, $teacher, $subject, $plaintext, $html);
     }
 
     /**

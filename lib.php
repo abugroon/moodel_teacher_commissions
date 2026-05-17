@@ -280,14 +280,32 @@ function local_teacher_commissions_navbar_link(string $url, string $icon, string
  * Serve files from local_teacher_commissions file areas.
  */
 function local_teacher_commissions_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options = []) {
+    global $DB, $USER;
+
     require_login();
-    if ($filearea !== 'payout_receipts') {
+
+    $syscontext = context_system::instance();
+    $itemid     = (int) array_shift($args);
+    $filename   = array_pop($args);
+    $filepath   = $args ? ('/' . implode('/', $args) . '/') : '/';
+
+    if ($filearea === 'payout_receipts') {
+        require_capability('local/teacher_commissions:viewadmindashboard', $syscontext);
+
+    } elseif ($filearea === 'withdrawal_approvals') {
+        // Allow admins or the teacher who owns the withdrawal request.
+        $is_admin = has_capability('local/teacher_commissions:approvewithdrawal', $syscontext);
+        if (!$is_admin) {
+            $req = $DB->get_record('local_tc_withdrawal_requests', ['id' => $itemid], 'teacherid', IGNORE_MISSING);
+            if (!$req || (int)$req->teacherid !== (int)$USER->id) {
+                return false;
+            }
+        }
+
+    } else {
         return false;
     }
-    require_capability('local/teacher_commissions:viewadmindashboard', context_system::instance());
-    $itemid   = (int) array_shift($args);
-    $filename = array_pop($args);
-    $filepath = $args ? ('/' . implode('/', $args) . '/') : '/';
+
     $fs   = get_file_storage();
     $file = $fs->get_file($context->id, 'local_teacher_commissions', $filearea, $itemid, $filepath, $filename);
     if (!$file) {

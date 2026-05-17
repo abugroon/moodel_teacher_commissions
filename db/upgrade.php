@@ -134,5 +134,17 @@ function xmldb_local_teacher_commissions_upgrade(int $oldversion): bool {
         upgrade_plugin_savepoint(true, 2024010103, 'local', 'teacher_commissions');
     }
 
+    // =========================================================================
+    // 2024010105 — Add receipt_file column to withdrawal requests table.
+    // =========================================================================
+    if ($oldversion < 2024010105) {
+        $wr_table = new xmldb_table('local_tc_withdrawal_requests');
+        $field    = new xmldb_field('receipt_file', XMLDB_TYPE_CHAR, '255', null, null, null, null, 'notes');
+        if (!$dbman->field_exists($wr_table, $field)) {
+            $dbman->add_field($wr_table, $field);
+        }
+        upgrade_plugin_savepoint(true, 2024010105, 'local', 'teacher_commissions');
+    }
+
     return true;
 }

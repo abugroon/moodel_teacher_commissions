@@ -204,6 +204,9 @@ if (!empty($my_requests)) {
                     <th style="padding:10px 14px;font-size:.68rem;font-weight:700;color:#64748b;
                                text-transform:uppercase;letter-spacing:.04em;border-bottom:2px solid #e2e8f0;">'
                         . get_string('status', 'local_teacher_commissions') . '</th>
+                    <th style="padding:10px 14px;font-size:.68rem;font-weight:700;color:#64748b;
+                               text-transform:uppercase;letter-spacing:.04em;border-bottom:2px solid #e2e8f0;">'
+                        . get_string('receipt', 'local_teacher_commissions') . '</th>
                 </tr>
             </thead>
             <tbody>';
@@ -228,6 +231,24 @@ if (!empty($my_requests)) {
                                      background:' . $sbg . ';color:' . $stxt . ';">'
                             . $slbl . '</span>
                     </td>
+                    <td style="padding:10px 14px;">';
+
+        if (!empty($req->receipt_file)) {
+            $dl = \moodle_url::make_pluginfile_url(
+                context_system::instance()->id,
+                'local_teacher_commissions',
+                'withdrawal_approvals',
+                $req->id, '/', $req->receipt_file, true
+            );
+            echo '<a href="' . $dl->out(false) . '" target="_blank"
+                     style="font-size:.78rem;color:#2563eb;font-weight:600;text-decoration:none;">'
+                 . '&#x1F4CE; ' . get_string('download_receipt', 'local_teacher_commissions')
+                 . '</a>';
+        } else {
+            echo '<span style="font-size:.75rem;color:#cbd5e1;">—</span>';
+        }
+
+        echo '  </td>
                 </tr>';
     }
 

@@ -228,6 +228,59 @@ $string['payment_reference']               = 'Reference / notes…';
 $string['filter_status']                   = 'Filter by Status';
 $string['all_statuses']                    = 'All Statuses';
 
+// Receipt attachment on approval.
+$string['receipt_attach_optional']     = 'Attach notice / receipt (PDF/JPG/PNG, optional, max 5 MB)';
+
+// Notification message provider.
+$string['messageprovider:withdrawal_request'] = 'New teacher withdrawal request';
+
+// Email / notification strings.
+$string['email_withdrawal_subject']   = 'New Withdrawal Request – {$a}';
+$string['email_withdrawal_small']     = 'New withdrawal request of {$a->amount} from {$a->teacher_name}';
+$string['email_withdrawal_plaintext'] = 'Dear {$a->marketer_name},
+
+A teacher has submitted a new withdrawal request that requires your review.
+
+──────────────────────────────
+Teacher : {$a->teacher_name}
+Amount  : {$a->amount}
+Date    : {$a->date}
+Notes   : {$a->notes}
+──────────────────────────────
+
+Please log in to review and process this request:
+{$a->url}
+
+This is an automated notification from the Teacher Commissions system.';
+$string['email_withdrawal_html']      = '<p>Dear <strong>{$a->marketer_name}</strong>,</p>
+<p>A teacher has submitted a new withdrawal request that requires your review.</p>
+<table style="border-collapse:collapse;width:100%;max-width:480px;font-family:sans-serif;font-size:14px;">
+  <tr style="background:#f8fafc;">
+    <td style="padding:10px 14px;border:1px solid #e2e8f0;font-weight:700;color:#374151;">Teacher</td>
+    <td style="padding:10px 14px;border:1px solid #e2e8f0;color:#1e293b;">{$a->teacher_name}</td>
+  </tr>
+  <tr>
+    <td style="padding:10px 14px;border:1px solid #e2e8f0;font-weight:700;color:#374151;">Amount</td>
+    <td style="padding:10px 14px;border:1px solid #e2e8f0;font-size:16px;font-weight:800;color:#059669;">{$a->amount}</td>
+  </tr>
+  <tr style="background:#f8fafc;">
+    <td style="padding:10px 14px;border:1px solid #e2e8f0;font-weight:700;color:#374151;">Date</td>
+    <td style="padding:10px 14px;border:1px solid #e2e8f0;color:#1e293b;">{$a->date}</td>
+  </tr>
+  <tr>
+    <td style="padding:10px 14px;border:1px solid #e2e8f0;font-weight:700;color:#374151;">Notes</td>
+    <td style="padding:10px 14px;border:1px solid #e2e8f0;color:#64748b;">{$a->notes}</td>
+  </tr>
+</table>
+<p style="margin-top:18px;">
+  <a href="{$a->url}"
+     style="display:inline-block;padding:10px 22px;background:#2563eb;color:#fff;
+            border-radius:8px;text-decoration:none;font-weight:700;font-size:14px;">
+    Review Request
+  </a>
+</p>
+<p style="font-size:12px;color:#94a3b8;">This is an automated notification from the Teacher Commissions system.</p>';
+
 // Privacy — withdrawal requests table.
 $string['privacy:metadata:local_tc_withdrawal_requests']              = 'Stores teacher withdrawal requests routed to main marketers.';
 $string['privacy:metadata:local_tc_withdrawal_requests:teacherid']    = 'Teacher user ID.';

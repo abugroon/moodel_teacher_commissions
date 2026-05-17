@@ -30,6 +30,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && confirm_sesskey()) {
 
     try {
         withdrawal_manager::update_status($requestid, $newstatus, $notes);
+
+        // Store optional receipt file when approving or marking as paid.
+        if (in_array($newstatus, ['approved', 'paid'], true)
+                && !empty($_FILES['receipt_file']['name'])
+                && $_FILES['receipt_file']['error'] === UPLOAD_ERR_OK
+                && $_FILES['receipt_file']['size'] <= 5242880) {
+            $ctx = context_system::instance();
+            $fs  = get_file_storage();
+            $fs->delete_area_files($ctx->id, 'local_teacher_commissions', 'withdrawal_approvals', $requestid);
+            $fileinfo = [
+                'contextid' => $ctx->id,
+                'component' => 'local_teacher_commissions',
+                'filearea'  => 'withdrawal_approvals',
+                'itemid'    => $requestid,
+                'filepath'  => '/',
+                'filename'  => clean_filename($_FILES['receipt_file']['name']),
+            ];
+            $fs->create_file_from_pathname($fileinfo, $_FILES['receipt_file']['tmp_name']);
+            $DB->set_field('local_tc_withdrawal_requests', 'receipt_file', $fileinfo['filename'], ['id' => $requestid]);
+        }
+
         redirect(
             new moodle_url('/local/teacher_commissions/admin/withdrawals.php'),
             get_string('withdrawal_status_updated', 'local_teacher_commissions')
@@ -170,6 +191,7 @@ echo local_teacher_commissions_admin_nav('withdrawals');
             <th><?php echo get_string('payout_amount', 'local_teacher_commissions'); ?></th>
             <th><?php echo get_string('date', 'local_teacher_commissions'); ?></th>
             <th><?php echo get_string('notes', 'local_teacher_commissions'); ?></th>
+            <th><?php echo get_string('receipt', 'local_teacher_commissions'); ?></th>
             <th><?php echo get_string('status', 'local_teacher_commissions'); ?></th>
             <th><?php echo get_string('actions', 'local_teacher_commissions'); ?></th>
         </tr>
@@ -195,24 +217,49 @@ echo local_teacher_commissions_admin_nav('withdrawals');
                 <?php echo s($req->notes ?: '—'); ?>
             </td>
             <td>
+                <?php
+                if (!empty($req->receipt_file)) {
+                    $dl = \moodle_url::make_pluginfile_url(
+                        context_system::instance()->id,
+                        'local_teacher_commissions',
+                        'withdrawal_approvals',
+                        $req->id, '/', $req->receipt_file, true
+                    );
+                    echo '<a href="' . $dl->out(false) . '" target="_blank"
+                              class="tc-action-btn" style="background:#e0f2fe;color:#0369a1;font-size:.72rem;">'
+                         . get_string('download_receipt', 'local_teacher_commissions') . '</a>';
+                } else {
+                    echo '<span style="font-size:.75rem;color:#cbd5e1;">—</span>';
+                }
+                ?>
+            </td>
+            <td>
                 <span class="tc-badge tc-badge-<?php echo $scfg['badge']; ?>">
                     <?php echo $scfg['label']; ?>
                 </span>
             </td>
             <td>
                 <?php if ($req->status === 'pending'): ?>
-                <!-- Approve -->
-                <form method="post" class="tc-notes-form" style="display:inline-block;margin-bottom:4px;">
+                <!-- Approve with optional receipt -->
+                <form method="post" enctype="multipart/form-data"
+                      style="display:inline-block;margin-bottom:6px;vertical-align:top;">
                     <?php echo html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'sesskey',   'value' => sesskey()]); ?>
                     <?php echo html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'requestid', 'value' => $req->id]); ?>
                     <?php echo html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'newstatus', 'value' => 'approved']); ?>
-                    <button type="submit" class="tc-action-btn tc-btn-approve"
-                            onclick="return confirm('<?php echo get_string('confirm_approve_withdrawal', 'local_teacher_commissions'); ?>')">
-                        <?php echo get_string('withdrawal_approve', 'local_teacher_commissions'); ?>
-                    </button>
+                    <div style="display:flex;flex-direction:column;gap:4px;">
+                        <label style="font-size:.72rem;color:#64748b;">
+                            <?php echo get_string('receipt_attach_optional', 'local_teacher_commissions'); ?>
+                        </label>
+                        <input type="file" name="receipt_file" accept=".pdf,.jpg,.jpeg,.png"
+                               style="font-size:.75rem;max-width:200px;">
+                        <button type="submit" class="tc-action-btn tc-btn-approve"
+                                onclick="return confirm('<?php echo get_string('confirm_approve_withdrawal', 'local_teacher_commissions'); ?>')">
+                            <?php echo get_string('withdrawal_approve', 'local_teacher_commissions'); ?>
+                        </button>
+                    </div>
                 </form>
                 <!-- Reject -->
-                <form method="post" class="tc-notes-form" style="display:inline-block;">
+                <form method="post" class="tc-notes-form" style="display:inline-block;vertical-align:top;">
                     <?php echo html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'sesskey',   'value' => sesskey()]); ?>
                     <?php echo html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'requestid', 'value' => $req->id]); ?>
                     <?php echo html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'newstatus', 'value' => 'rejected']); ?>
@@ -225,17 +272,24 @@ echo local_teacher_commissions_admin_nav('withdrawals');
                 </form>
 
                 <?php elseif ($req->status === 'approved'): ?>
-                <!-- Mark as paid -->
-                <form method="post" class="tc-notes-form">
+                <!-- Mark as paid with optional receipt -->
+                <form method="post" enctype="multipart/form-data">
                     <?php echo html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'sesskey',   'value' => sesskey()]); ?>
                     <?php echo html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'requestid', 'value' => $req->id]); ?>
                     <?php echo html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'newstatus', 'value' => 'paid']); ?>
-                    <input type="text" name="notes" class="tc-notes-input"
-                           placeholder="<?php echo get_string('payment_reference', 'local_teacher_commissions'); ?>">
-                    <button type="submit" class="tc-action-btn tc-btn-pay"
-                            onclick="return confirm('<?php echo get_string('confirm_pay_withdrawal', 'local_teacher_commissions'); ?>')">
-                        <?php echo get_string('withdrawal_mark_paid', 'local_teacher_commissions'); ?>
-                    </button>
+                    <div style="display:flex;flex-direction:column;gap:4px;">
+                        <input type="text" name="notes" class="tc-notes-input"
+                               placeholder="<?php echo get_string('payment_reference', 'local_teacher_commissions'); ?>">
+                        <label style="font-size:.72rem;color:#64748b;">
+                            <?php echo get_string('receipt_attach_optional', 'local_teacher_commissions'); ?>
+                        </label>
+                        <input type="file" name="receipt_file" accept=".pdf,.jpg,.jpeg,.png"
+                               style="font-size:.75rem;max-width:200px;">
+                        <button type="submit" class="tc-action-btn tc-btn-pay"
+                                onclick="return confirm('<?php echo get_string('confirm_pay_withdrawal', 'local_teacher_commissions'); ?>')">
+                            <?php echo get_string('withdrawal_mark_paid', 'local_teacher_commissions'); ?>
+                        </button>
+                    </div>
                 </form>
 
                 <?php else: ?>
