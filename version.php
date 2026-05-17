@@ -25,7 +25,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component    = 'local_teacher_commissions';
-$plugin->version      = 2024010103;
+$plugin->version      = 2024010105;
 $plugin->requires     = 2025041400; // Moodle 5.0+
 $plugin->maturity     = MATURITY_STABLE;
 $plugin->release      = '1.1.0';

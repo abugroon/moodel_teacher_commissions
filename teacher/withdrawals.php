@@ -33,7 +33,11 @@ if (!local_teacher_commissions_has_teacher_access()) {
     );
 }
 
-require_capability('local/teacher_commissions:requestwithdrawal', $syscontext);
+$can_withdraw = has_capability('local/teacher_commissions:requestwithdrawal', $syscontext)
+    || !empty(get_user_capability_course('local/teacher_commissions:requestwithdrawal', $USER->id, true, 'id', '', 1));
+if (!$can_withdraw) {
+    throw new required_capability_exception($syscontext, 'local/teacher_commissions:requestwithdrawal', 'nopermissions', '');
+}
 
 $mainmarketerid = required_param('mainmarketerid', PARAM_INT);
 $back_url       = new moodle_url('/local/teacher_commissions/teacher/dashboard.php');
