@@ -267,7 +267,7 @@ function local_teacher_commissions_navbar_link(string $url, string $icon, string
     $active = strpos($PAGE->url->out(false), '/local/teacher_commissions/') !== false;
     $style  = 'display:inline-flex;align-items:center;gap:5px;white-space:nowrap;'
             . 'font-weight:600;font-size:.88rem;text-decoration:none;'
-            . 'padding:6px 12px;border-radius:8px;transition:background .15s;'
+            . 'padding:20px 12px;border-radius:8px;transition:background .15s;'
             . ($active
                 ? 'background:rgba(37,99,235,.12);color:#1d4ed8;'
                 : 'color:inherit;');
